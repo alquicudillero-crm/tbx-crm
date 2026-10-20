@@ -248,14 +248,21 @@ td.r,th.r{text-align:right}
 
 /* etapas */
 .stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-.stage-top{background:var(--s-eta);color:#fff;padding:16px 18px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline}
+.stage-top{background:var(--stc,var(--s-eta));color:#fff;padding:16px 18px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline}
 :root[data-theme="dark"] .stage-top{color:#08160c}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .stage-top{color:#08160c}}
 .stage-top h2{font-size:28px;text-transform:uppercase}
 .stage-top span{font-weight:600}
 .stage-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--line)}
 .stage-stats div{background:var(--surface);padding:12px 16px}
-.stage-stats .v{font-family:var(--f-mono);font-size:22px;font-weight:600;color:var(--s-eta)}
+.stage-stats .v{font-family:var(--f-mono);font-size:22px;font-weight:600;color:var(--stc,var(--s-eta))}
+.stage-top .btn{color:var(--ink);background:var(--surface);border-color:transparent}
+.stage-stats .v.txt{font-family:var(--f-body);font-size:16px;line-height:1.35;font-weight:700}
+.tipo-chip{display:inline-block;font-family:var(--f-body);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:rgba(255,255,255,.22);border-radius:99px;padding:3px 10px;vertical-align:4px;margin-right:6px}
+.day-btn i.t-etapa{background:var(--s-eta)} .day-btn i.t-traslado{background:var(--s-hot)} .day-btn i.t-libre{background:var(--s-bal)}
+.day-btn small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-top:1px}
+.tipo-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:-6px 0 12px}
+.tipo-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
 .stage-body{padding:16px 18px;display:grid;gap:16px}
 .stage-body h4{margin:0 0 4px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .stage-body p{margin:0;white-space:pre-wrap;max-width:75ch;font-size:15px}
@@ -398,7 +405,7 @@ const TIPOS = {bici:"Cicloturismo", trek:"Trekking", otro:"Otro"};
 const CATS = {comida:"Comidas", repostaje:"Repostajes", hotel:"Hoteles", super:"Supermercado", peaje:"Peajes y parking", bicis:"Alquiler de bicis", vehiculo:"Furgonetas", guias:"Pago a guías", actividad:"Actividades", otros:"Otros"};
 const CAT_IVA = {comida:10, repostaje:21, hotel:10, super:10, peaje:21, bicis:21, vehiculo:21, guias:21, actividad:21, otros:21};
 const CAT_COL = {comida:"s-gas",repostaje:"s-hot",hotel:"s-bal",super:"s-com",peaje:"s-cli",bicis:"s-room",vehiculo:"half",guias:"paid",actividad:"s-eta",otros:"muted"};
-const TABS = [["hoteles","Hoteles"],["etapas","Etapas"],["gastos","Gastos"],["compra","Compra"],["clientes","Clientes"],["room","List Room"],["balance","Balance"]];
+const TABS = [["hoteles","Hoteles"],["etapas","Programa"],["gastos","Gastos"],["compra","Compra"],["clientes","Clientes"],["room","List Room"],["balance","Balance"]];
 const pad2 = n => String(n ?? "").padStart(2,"0");
 const r2 = n => Math.round((+n||0)*100)/100;
 const slug = s => String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_|_$/g,"");
@@ -656,39 +663,60 @@ function viewHoteles(v){
 }
 
 /* ===== ETAPAS ===== */
+const TIPO_DIA = {etapa:{lbl:"Etapa", col:"var(--s-eta)"}, traslado:{lbl:"Traslado", col:"var(--s-hot)"}, libre:{lbl:"Día libre", col:"var(--s-bal)"}};
+function tipoDia(e){
+  e = e || {};
+  if (TIPO_DIA[e.tipo]) return e.tipo;
+  const t = String(e.titulo||"").toLowerCase();
+  if (/traslado|transfer|llegada|regreso al aeropuerto|aeropuerto/.test(t) && !(+e.desnivel)) return "traslado";
+  if (/libre|descanso/.test(t) && !(+e.km)) return "libre";
+  return "etapa";
+}
+const cleanTitle = t => String(t||"").replace(/^\s*etapa\s*\d+\s*[·:.\-–]\s*/i, "");
+const dayHas = e => !!e && Object.keys(e).some(k => Array.isArray(e[k]) ? e[k].length : !!e[k]);
+function etapaNum(ds, f){ // 1, 2, 3… counting only cycling/trekking days that have content
+  let n = 0; for (const d of ds){ const e = S.etapas[d]; if (dayHas(e) && tipoDia(e)==="etapa") n++; if (d===f) return n; } return n;
+}
+function dayTag(ds, f){ const e = S.etapas[f]; if (!dayHas(e)) return ""; const t = tipoDia(e); return t==="etapa" ? `Etapa ${etapaNum(ds,f)}` : TIPO_DIA[t].lbl; }
 function viewEtapas(v){
   const ds = dias(v);
-  const head = secTitle("Etapas", "La información de cada etapa para repasarla en el briefing del día anterior: recorrido, distancia, desnivel, paradas y avisos.");
-  if (!ds.length) return head + `<div class="empty"><p>Añade las fechas del viaje para crear las etapas.</p></div>`;
+  const head = secTitle("Programa del viaje", "Cada día del viaje: etapas, traslados y días libres, con lo necesario para el briefing del día anterior.");
+  if (!ds.length) return head + `<div class="empty"><p>Añade las fechas del viaje para crear el programa.</p></div>`;
   const f = pickDay("eta", ds); const e = S.etapas[f] || {}; const i = ds.indexOf(f);
   const hotel = S.hoteles.find(h => covers(h,f) && h.grupo==="clientes");
-  const has = Object.keys(e).some(k => Array.isArray(e[k]) ? e[k].length : !!e[k]);
-  const stat = (lab, val, unit) => `<div><span class="label">${lab}</span><div class="v">${val!==undefined&&val!==""&&val!==null?esc(val)+(unit?`<small style="font-size:13px;color:var(--muted)"> ${unit}</small>`:""):"—"}</div></div>`;
+  const has = dayHas(e); const tipo = tipoDia(e); const T = TIPO_DIA[tipo];
+  const stat = (lab, val, unit) => `<div><span class="label">${lab}</span><div class="v ${String(val||"").length>10?"txt":""}">${val!==undefined&&val!==""&&val!==null?esc(val)+(unit?`<small style="font-size:13px;color:var(--muted)"> ${unit}</small>`:""):"—"}</div></div>`;
   const block = (lab, txt) => txt ? `<div><h4>${lab}</h4><p>${esc(txt)}</p></div>` : "";
-  return head + dayPicker("eta", ds, d => S.etapas[d] && S.etapas[d].titulo ? "has" : "") + `
-    <div class="stage">
-      <div class="stage-top"><h2>Día ${i+1}${e.titulo?" · "+esc(e.titulo):""}</h2><span>${esc(fLong.format(parse(f)))}</span>
-        <button class="btn sm ${AO}" data-act="editEtapa" data-f="${f}" style="margin-left:auto">${has?"Editar etapa":"+ Rellenar etapa"}</button></div>
-      ${has ? `<div class="stage-stats">
-        ${stat("Distancia", e.km, "km")}${stat("Desnivel +", e.desnivel, "m")}${stat("Hora de salida", e.hora)}${stat("Salida → llegada", [e.salida,e.llegada].filter(Boolean).join(" → "))}
-      </div>
-      <div class="stage-body">
-        ${e.alertas?`<div class="alert"><h4 style="color:var(--due)">Avisos importantes</h4><p>${esc(e.alertas)}</p></div>`:""}
-        ${block("Descripción del recorrido", e.descripcion)}
-        ${block("Paradas, comidas y avituallamientos", e.paradas)}
-        ${block("Notas para el briefing", e.briefing)}
-        <div><h4>Tracks de la etapa (GPX, KML, FIT…)</h4><div class="docs">
+  const ruta = [e.salida,e.llegada].filter(Boolean).join(" → ");
+  const stats = tipo==="etapa" ? `${stat("Distancia", e.km, "km")}${stat("Desnivel +", e.desnivel, "m")}${stat("Hora de salida", e.hora)}${stat("Salida → llegada", ruta)}`
+    : tipo==="traslado" ? `${stat("Origen → destino", ruta)}${stat("Hora de encuentro", e.hora)}${stat("Punto de encuentro", e.puntoEncuentro)}${stat("En vehículo", [e.km?e.km+" km":"", e.duracion].filter(Boolean).join(" · "))}`
+    : "";
+  const tracks = `<div><h4>Tracks de la etapa (GPX, KML, FIT…)</h4><div class="docs">
           ${(e.tracks||[]).map(d => `<span class="doc"><button type="button" data-act="dlTracks" data-f="${f}" data-did="${esc(d.id)}" style="font-size:12.5px;color:var(--ink);padding:0;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Descargar ${esc(d.nombre)}">${esc(d.nombre)}</button>
-            <button data-act="delFile" data-kind="track" data-id="${esc(f)}" data-did="${esc(d.id)}" class="${S.armed==="doc"+d.id?"armed":""}" aria-label="Quitar track">${S.armed==="doc"+d.id?"¿Quitar?":"×"}</button></span>`).join("")}
+            <button data-act="delFile" data-kind="track" data-id="${esc(f)}" data-did="${esc(d.id)}" class="${AO} ${S.armed==="doc"+d.id?"armed":""}" aria-label="Quitar track">${S.armed==="doc"+d.id?"¿Quitar?":"×"}</button></span>`).join("")}
           ${(e.tracks||[]).length>1?`<button class="btn sm" data-act="dlTracks" data-f="${f}">Descargar todos (.zip)</button>`:""}
           ${S.assets?`<button class="btn sm ${AO}" data-act="upload" data-kind="track" data-id="${f}">Subir tracks</button>`:""}
           ${(e.tracks||[]).length||S.assets?"":'<span class="hint">Sin tracks.</span>'}</div>
           ${linksOf(e).length?`<div class="docs" style="margin-top:8px">${linksOf(e).map(u => `<a class="btn sm" href="${esc(u)}" target="_blank" rel="noopener">${esc(hostOf(u))} ↗</a>`).join("")}</div>`:""}
-          ${(e.tracks||[]).length?'<p class="hint" style="margin-top:6px">Se descargan dentro de un .zip con su nombre original, listos para el GPS o la app.</p>':""}</div>
+          ${(e.tracks||[]).length?'<p class="hint" style="margin-top:6px">Se descargan dentro de un .zip con su nombre original, listos para el GPS o la app.</p>':""}</div>`;
+  const picker = dayPicker("eta", ds, d => { const x = S.etapas[d]; return dayHas(x) ? "t-"+tipoDia(x) : ""; })
+    .replace(/(<button class="day-btn[^"]*" data-act="day" data-k="eta" data-f="([0-9-]+)">.*?<\/span>)/g, (m, all, d) => { const t = dayTag(ds, d); return t ? `${all}<small>${esc(t)}</small>` : all; });
+  return head + `<div class="tipo-legend"><span><i style="background:var(--s-eta)"></i>Etapa</span><span><i style="background:var(--s-hot)"></i>Traslado</span><span><i style="background:var(--s-bal)"></i>Día libre</span></div>` + picker + `
+    <div class="stage" style="--stc:${T.col}">
+      <div class="stage-top"><h2>${has?`<span class="tipo-chip">${esc(dayTag(ds,f))}</span>`:""}Día ${i+1}${e.titulo?" · "+esc(cleanTitle(e.titulo)):""}</h2><span>${esc(fLong.format(parse(f)))}</span>
+        <button class="btn sm ${AO}" data-act="editEtapa" data-f="${f}" style="margin-left:auto">${has?"Editar día":"+ Rellenar día"}</button></div>
+      ${has ? `${stats?`<div class="stage-stats">${stats}</div>`:""}
+      <div class="stage-body">
+        ${e.alertas?`<div class="alert"><h4 style="color:var(--due)">Avisos importantes</h4><p>${esc(e.alertas)}</p></div>`:""}
+        ${tipo==="libre" ? block("Propuestas para el día", e.propuestas) : ""}
+        ${block(tipo==="etapa"?"Descripción del recorrido":tipo==="traslado"?"Detalles del traslado":"Descripción del día", e.descripcion)}
+        ${tipo==="etapa" ? block("Paradas, comidas y avituallamientos", e.paradas) : ""}
+        ${block("Notas para el briefing", e.briefing)}
+        ${tipo==="etapa" || (e.tracks||[]).length ? tracks : ""}
         ${hotel?`<div class="stage-hotel"><h4>Hotel de clientes esta noche</h4><p><b>${esc(hotel.nombre)}</b>${hotel.ciudad?" · "+esc(hotel.ciudad):""}${hotel.telefono?" · "+esc(hotel.telefono):""}</p></div>`:""}
-        <div><h4>Archivos de la etapa (rutómetro, mapas, perfil…)</h4><div class="docs">${fileChips(e.files, "etapa", f)}
+        <div><h4>Archivos del día (rutómetro, mapas, perfil, billetes…)</h4><div class="docs">${fileChips(e.files, "etapa", f)}
           ${S.assets?`<button class="btn sm ${AO}" data-act="upload" data-kind="etapa" data-id="${f}">Subir archivo</button>`:""}</div></div>
-      </div>` : `<div class="stage-body"><p class="hint">Todavía no hay información de esta etapa. Pulsa «Rellenar etapa» para añadir el recorrido, los kilómetros, el desnivel y los avisos del día.</p></div>`}
+      </div>` : `<div class="stage-body"><p class="hint">Todavía no hay información de este día. Pulsa «Rellenar día» y elige si es una etapa, un traslado o un día libre.</p></div>`}
     </div>`;
 }
 function linksOf(e){
@@ -1155,21 +1183,33 @@ function gastoForm(g){
   updCalc();
 }
 function etapaForm(f){
-  const e = S.etapas[f] || {}; const ds = dias(trip());
+  const e = S.etapas[f] || {}; const ds = dias(trip()); const tipo = tipoDia(e);
   S.modal = {kind:"etapa", id:f};
-  openModal(hdr(`Etapa · ${esc(dayLabel(ds,f))}`) + `<form id="frm">
-    ${fld("titulo","Título de la etapa",e.titulo,"text","full")}
-    ${fld("salida","Salida",e.salida)}${fld("llegada","Llegada",e.llegada)}
-    ${fld("km","Distancia (km)",e.km,"number")}${fld("desnivel","Desnivel positivo (m)",e.desnivel,"number")}
-    ${fld("hora","Hora de salida",e.hora,"time")}<div class="f"></div>
-    <div class="f full"><label for="enlaces">Enlaces a tracks (Komoot, Wikiloc… uno por línea)</label><textarea id="enlaces" name="enlaces" placeholder="https://www.komoot.com/tour/...&#10;https://es.wikiloc.com/...">${esc(linksOf(e).join("\n"))}</textarea></div>
-    <p class="hint" style="grid-column:1/-1;margin:0">Los archivos GPX, KML o FIT se suben desde la ficha de la etapa con «Subir tracks».</p>
-    <div class="f full"><label for="descripcion">Descripción del recorrido</label><textarea id="descripcion" name="descripcion" rows="4">${esc(e.descripcion||"")}</textarea></div>
-    <div class="f full"><label for="paradas">Paradas, comidas y avituallamientos</label><textarea id="paradas" name="paradas">${esc(e.paradas||"")}</textarea></div>
+  const L = (et, tr) => `data-l-etapa="${et}" data-l-traslado="${tr}"`;
+  openModal(hdr(`Día · ${esc(dayLabel(ds,f))}`) + `<form id="frm">
+    <div class="f full"><label>Tipo de día</label><div class="pillset">${Object.entries(TIPO_DIA).map(([k,t])=>`<label><input type="radio" name="tipoDia" value="${k}" ${tipo===k?"checked":""}>${t.lbl}</label>`).join("")}</div></div>
+    ${fld("titulo","Título del día",e.titulo,"text","full")}
+    <div class="f" data-show="etapa traslado"><label for="salida" ${L("Salida","Origen")}>Salida</label><input id="salida" name="salida" value="${esc(e.salida||"")}"></div>
+    <div class="f" data-show="etapa traslado"><label for="llegada" ${L("Llegada","Destino")}>Llegada</label><input id="llegada" name="llegada" value="${esc(e.llegada||"")}"></div>
+    <div class="f" data-show="etapa traslado"><label for="km" ${L("Distancia en bici o a pie (km)","Distancia en vehículo (km)")}>Distancia (km)</label><input id="km" name="km" type="number" step="0.1" min="0" inputmode="decimal" value="${esc(e.km??"")}"></div>
+    <div class="f" data-show="etapa"><label for="desnivel">Desnivel positivo (m)</label><input id="desnivel" name="desnivel" type="number" min="0" inputmode="numeric" value="${esc(e.desnivel??"")}"></div>
+    <div class="f" data-show="traslado"><label for="duracion">Duración aproximada</label><input id="duracion" name="duracion" value="${esc(e.duracion||"")}" placeholder="Ej. 2 h"></div>
+    <div class="f" data-show="etapa traslado"><label for="hora" ${L("Hora de salida","Hora de encuentro")}>Hora</label><input id="hora" name="hora" type="time" value="${esc(e.hora||"")}"></div>
+    <div class="f full" data-show="traslado"><label for="puntoEncuentro">Punto de encuentro</label><input id="puntoEncuentro" name="puntoEncuentro" value="${esc(e.puntoEncuentro||"")}" placeholder="Ej. Llegadas del aeropuerto Marco Polo, junto a la salida B"></div>
+    <div class="f full" data-show="etapa"><label for="enlaces">Enlaces a tracks (Komoot, Wikiloc… uno por línea)</label><textarea id="enlaces" name="enlaces" placeholder="https://www.komoot.com/tour/...&#10;https://es.wikiloc.com/...">${esc(linksOf(e).join("\n"))}</textarea></div>
+    <p class="hint" style="grid-column:1/-1;margin:0" data-show="etapa">Los archivos GPX, KML o FIT se suben desde la ficha del día con «Subir tracks».</p>
+    <div class="f full" data-show="libre"><label for="propuestas">Propuestas para el día (visitas, rutas cortas, restaurantes…)</label><textarea id="propuestas" name="propuestas" rows="3">${esc(e.propuestas||"")}</textarea></div>
+    <div class="f full"><label for="descripcion" data-l-etapa="Descripción del recorrido" data-l-traslado="Detalles del traslado" data-l-libre="Descripción del día">Descripción</label><textarea id="descripcion" name="descripcion" rows="4">${esc(e.descripcion||"")}</textarea></div>
+    <div class="f full" data-show="etapa"><label for="paradas">Paradas, comidas y avituallamientos</label><textarea id="paradas" name="paradas">${esc(e.paradas||"")}</textarea></div>
     <div class="f full"><label for="alertas">Avisos importantes (aparecen en rojo)</label><textarea id="alertas" name="alertas" placeholder="Ej. Tramo de 3 km por carretera nacional, puerto de 8 % al final">${esc(e.alertas||"")}</textarea></div>
     <div class="f full"><label for="briefing">Notas para el briefing</label><textarea id="briefing" name="briefing">${esc(e.briefing||"")}</textarea></div>
-    <footer><button type="button" class="btn" data-act="close">Cancelar</button><button class="btn pri" type="submit">Guardar etapa</button></footer>
+    <footer><button type="button" class="btn" data-act="close">Cancelar</button><button class="btn pri" type="submit">Guardar día</button></footer>
   </form>`, "etapas");
+  setTipoForm(tipo);
+}
+function setTipoForm(t){
+  document.querySelectorAll("#frm [data-show]").forEach(el => { el.hidden = !el.dataset.show.split(" ").includes(t); });
+  document.querySelectorAll("#frm label[data-l-etapa]").forEach(l => { const v = l.dataset["l" + t.charAt(0).toUpperCase() + t.slice(1)]; if (v) l.textContent = v; });
 }
 function clientForm(c){
   const next = S.clientes.reduce((m,x)=>Math.max(m,+x.num||0),0)+1;
@@ -1257,10 +1297,12 @@ async function submitForm(form){
       await window.TBX_TEAM.save({email, nombre:val("t-nombre"), rol:val("t-rol")});
       await loadTeam(); toast("Añadido al equipo"); teamForm(); return;
     } else if (m.kind === "etapa"){
-      const keys = ["titulo","salida","llegada","km","desnivel","hora","enlaces","descripcion","paradas","alertas","briefing"];
+      const keys = ["titulo","salida","llegada","km","desnivel","hora","enlaces","descripcion","paradas","alertas","briefing","puntoEncuentro","duracion","propuestas"];
       const patch = {enlace:""}; keys.forEach(k => patch[k] = (fd[k]||"").trim());
+      patch.tipo = fd.tipoDia || "etapa";
+      if (patch.tipo !== "etapa") patch.desnivel = "";
       await mutateDoc(`viajes/${S.vid}/etapas/${m.id}`, cur => ({...cur, ...patch}));
-      toast("Etapa guardada");
+      toast("Día guardado");
     } else if (m.kind === "gasto"){
       const total = +val("g-total"); if (!(total > 0)) return toast("Escribe el importe del ticket.");
       const btn = $("#g-save"); btn.disabled = true; btn.textContent = "Guardando…";
@@ -1460,6 +1502,7 @@ document.addEventListener("change", ev => {
   if (t.name === "cat") { $("#g-cat").value = t.value; if (document.querySelector("input[name=tipo]:checked").value==="factura") $("#g-iva").value = CAT_IVA[t.value]; updCalc(); }
   if (t.name === "tipo") { if (t.value==="factura") $("#g-iva").value = CAT_IVA[$("#g-cat").value]||21; updCalc(); }
   if (t.id === "g-iva") updCalc();
+  if (t.name === "tipoDia") setTipoForm(t.value);
   if (t.id === "g-cam" || t.id === "g-file") { const f = t.files[0]; if (!f) return; S.pendingFile = f;
     const prev = $("#phPrev"); if (/^image/.test(f.type)) { const u = URL.createObjectURL(f); prev.innerHTML = `<img src="${u}" alt="Ticket nuevo">`; } else prev.innerHTML = '<div class="ph">PDF<br>listo</div>'; }
 });
