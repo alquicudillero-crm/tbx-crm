@@ -69,7 +69,6 @@ a{color:inherit}
 /* top bar + jersey stripe */
 .top{display:flex;align-items:center;gap:14px;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--brand-black);color:#ffffff}
 .brand-logo{height:46px;width:auto;display:block}
-.brand-pic{height:52px;width:auto;display:block;border-radius:6px}
 .brand{font-family:var(--f-display);font-weight:800;font-size:23px;letter-spacing:.09em;text-transform:uppercase;display:flex;align-items:center;gap:14px}
 .brand small{font-family:var(--f-body);font-weight:500;font-size:12px;letter-spacing:.03em;opacity:.85;text-transform:none}
 .stripe{height:5px;background:var(--brand-grad)}
@@ -1901,13 +1900,6 @@ function extrasForm(cid){
     <footer><button type="button" class="btn" data-act="close">Cerrar</button><button class="btn pri" type="submit">Añadir extra</button></footer>
   </form>`, "balance");
 }
-/* ===== IMAGEN DE LA CABECERA (junto al logo; se guarda en el almacenamiento privado) ===== */
-async function cargarCabecera(){
-  try { const d = await S.db.doc("contacfg/ajustes").get(); const c = d.exists && d.data().cabecera; if (!c || !c.id) return;
-    const brand = document.querySelector(".brand"); if (!brand || brand.querySelector(".brand-pic")) return;
-    const img = document.createElement("img"); img.className = "brand-pic"; img.alt = c.alt || ""; img.src = "/_blob/" + c.id; brand.appendChild(img);
-  } catch(e){}
-}
 /* ===== AVISO DE VERSIÓN NUEVA DEL CRM ===== */
 function vigilarVersion(){
   const firma = t => t.length + ":" + (t.match(/function /g)||[]).length;
@@ -2537,7 +2529,7 @@ renderAll();
   S.db = await window.claude.use("db");
   if (!S.db) { setSync("off","Sin conexión"); renderAll(); return; }
   setSync("","Cargando…"); renderAll();
-  subscribeTrips(); loadConsentGlobal(); vigilarVersion(); cargarCabecera();
+  subscribeTrips(); loadConsentGlobal(); vigilarVersion();
   loadTeam().then(() => renderAll());
   window.claude.use("assets").then(a => { S.assets = a; renderMain(); });
   window.claude.use("downloads").then(d => { S.downloads = d; });
