@@ -1900,6 +1900,27 @@ function extrasForm(cid){
     <footer><button type="button" class="btn" data-act="close">Cerrar</button><button class="btn pri" type="submit">Añadir extra</button></footer>
   </form>`, "balance");
 }
+/* ===== AVISO DE VERSIÓN NUEVA DEL CRM ===== */
+function vigilarVersion(){
+  const firma = t => t.length + ":" + (t.match(/function /g)||[]).length;
+  let actual = null;
+  const mira = async () => {
+    try {
+      const t = await (await fetch(location.pathname + "?v=" + Date.now(), {cache:"no-store"})).text();
+      if (actual === null) { actual = firma(t); const mio = [...document.scripts].map(x => x.textContent).sort((x,y) => y.length - x.length)[0] || ""; if (mio.length > 1000 && !t.includes(mio.slice(-3000))) actual = "viejo"; }
+      if (actual === "viejo" || firma(t) !== actual) mostrarAvisoVersion();
+    } catch(e){}
+  };
+  setTimeout(mira, 4000); setInterval(mira, 5 * 60 * 1000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) mira(); });
+}
+function mostrarAvisoVersion(){
+  if (document.getElementById("nuevaVersion")) return;
+  const d = document.createElement("div"); d.id = "nuevaVersion";
+  d.innerHTML = `<span>Hay una versión nueva del CRM.</span><button class="btn sm pri" onclick="location.reload()">Actualizar ahora</button>`;
+  d.style.cssText = "position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;background:#0b0b0b;color:#fff;border:2px solid #b5c036;border-radius:12px;padding:10px 14px;display:flex;gap:12px;align-items:center;box-shadow:0 8px 30px rgba(0,0,0,.35);font-weight:600;max-width:calc(100vw - 32px)";
+  document.body.appendChild(d);
+}
 /* ===== CONSENTIMIENTO ÚNICO PARA TODOS LOS VIAJES ===== */
 const consentOf = v => (v && v.consentDoc) || S.consentGlobal || null;
 async function loadConsentGlobal(){ if (!isAdmin()) return; try { const d = await S.db.doc("contacfg/consentimiento").get(); if (d.exists) S.consentGlobal = d.data().doc || null; } catch(e){} }
@@ -2508,7 +2529,7 @@ renderAll();
   S.db = await window.claude.use("db");
   if (!S.db) { setSync("off","Sin conexión"); renderAll(); return; }
   setSync("","Cargando…"); renderAll();
-  subscribeTrips(); loadConsentGlobal();
+  subscribeTrips(); loadConsentGlobal(); vigilarVersion();
   loadTeam().then(() => renderAll());
   window.claude.use("assets").then(a => { S.assets = a; renderMain(); });
   window.claude.use("downloads").then(d => { S.downloads = d; });
