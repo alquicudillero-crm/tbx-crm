@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Dolomitas Road 2026 con Travel Bikex: programa día a día, etapas, hoteles e información práctica para los ciclistas del viaje.">
+<meta name="robots" content="noindex">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Dolomitas Road 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&family=Saira:wght@500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: cuaderno de ruta del ciclista — portada con la cordillera de perfiles, menú fijo, programa día a día en tarjetas con su perfil, después hoteles, información práctica, qué llevar y contacto */
+:root{
+  --bg:#f3f5f0; --surface:#ffffff; --sunk:#e9ede5; --ink:#1e2420; --muted:#5d6661; --line:#d8ded3;
+  --brand:#6d6e71; --lime:#8cc63f; --green:#2e7d2b; --green-bg:#e3f1da; --on-lime:#15200c;
+  --warn:#b4410e; --warn-bg:#fdeee3; --on-photo:#ffffff;
+  --f-display:"Saira Condensed","Arial Narrow",Arial,sans-serif;
+  --f-num:"Saira",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:14px; --shadow:0 1px 2px rgba(25,40,20,.06),0 8px 24px rgba(25,40,20,.07);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1311; --surface:#171c19; --sunk:#121714; --ink:#e6ebe5; --muted:#9aa49d; --line:#29312c;
+  --brand:#b9bbbe; --lime:#a5d95e; --green:#8fd36f; --green-bg:#1a2b16; --on-lime:#15200c;
+  --warn:#ff9a62; --warn-bg:#36200f; --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1311; --surface:#171c19; --sunk:#121714; --ink:#e6ebe5; --muted:#9aa49d; --line:#29312c;
+  --brand:#b9bbbe; --lime:#a5d95e; --green:#8fd36f; --green-bg:#1a2b16; --on-lime:#15200c;
+  --warn:#ff9a62; --warn-bg:#36200f; --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+a{color:var(--green)}
+:focus-visible{outline:3px solid var(--lime);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:.01em;line-height:1.05}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:14px;padding-block:8px}
+.logo{display:inline-grid;place-items:center;background:#000000;border-radius:10px;padding:4px 10px;flex:0 0 auto}
+.logo img{height:30px;width:auto;display:block}
+.nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-left:auto;min-width:0}
+.nav::-webkit-scrollbar{display:none}
+.nav a{flex:0 0 auto;text-decoration:none;color:var(--ink);font-family:var(--f-display);font-weight:700;font-size:16px;letter-spacing:.04em;text-transform:uppercase;padding:6px 12px;border-radius:99px;border:1.5px solid var(--line)}
+.nav a:hover{border-color:var(--lime)}
+.crm-back{flex:0 0 auto;text-decoration:none;font-weight:700;font-size:14px;color:var(--on-lime);background:var(--lime);border-radius:99px;padding:6px 12px;white-space:nowrap}
+
+/* hero */
+.hero{position:relative;color:var(--on-photo);background:#1d2a1f url(img/hero.jpg) center 35%/cover no-repeat;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,16,12,.35) 0%,rgba(10,16,12,.55) 55%,rgba(10,16,12,.88) 100%)}
+.hero .wrap{position:relative;padding-block:56px 28px;display:grid;gap:18px}
+.kicker{font-family:var(--f-display);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:15px;color:var(--lime)}
+.hero h1{font-size:clamp(54px,11vw,128px);font-weight:800;text-transform:uppercase;line-height:.88;letter-spacing:.005em}
+.hero h1 span{display:block;color:var(--lime)}
+.hero p.lead{max-width:60ch;font-size:18px;margin:0;opacity:.95}
+.stats{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:6px}
+.stat{display:flex;flex-direction:column}
+.stat b{font-family:var(--f-num);font-weight:700;font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat small{font-size:12px;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+.status{display:inline-flex;align-self:start;justify-self:start;gap:8px;align-items:center;background:var(--lime);color:var(--on-lime);font-weight:700;border-radius:99px;padding:5px 14px;font-size:14px}
+.range{position:relative;margin-top:10px}
+.range svg{display:block;width:100%;height:auto}
+.range .lbls{display:flex;font-family:var(--f-display);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.9}
+.range .lbls span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-left:4px;border-left:1px solid rgba(255,255,255,.35)}
+
+/* sections */
+section{padding-block:44px 8px;scroll-margin-top:70px}
+.sec-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin-bottom:18px}
+.sec-h h2{font-size:clamp(34px,6vw,52px);text-transform:uppercase;font-weight:800}
+.sec-h h2 em{font-style:normal;color:var(--lime)}
+.sec-h p{margin:0;color:var(--muted);max-width:62ch}
+
+/* day cards */
+.days{display:flex;flex-direction:column;gap:16px}
+.day{display:grid;grid-template-columns:96px minmax(0,1fr);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.day.today{outline:3px solid var(--lime)}
+.day .rail{background:var(--sunk);display:flex;flex-direction:column;align-items:center;padding:16px 6px;gap:2px;border-right:1px solid var(--line);text-align:center}
+.day.ride .rail{background:var(--lime);color:var(--on-lime);border-right-color:transparent}
+.rail .dn{font-family:var(--f-num);font-weight:700;font-size:40px;line-height:1}
+.rail .mo{font-family:var(--f-display);font-weight:700;letter-spacing:.12em;font-size:14px;text-transform:uppercase}
+.rail .wd{font-size:13px;opacity:.85;text-transform:capitalize}
+.rail .tag{margin-top:8px;font-family:var(--f-display);font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;border-top:2px solid currentColor;padding-top:6px}
+.day .body{padding:18px 20px 20px;display:grid;gap:12px;min-width:0}
+.day h3{font-size:30px;text-transform:uppercase;font-weight:800}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{display:inline-flex;align-items:baseline;gap:6px;background:var(--sunk);border-radius:99px;padding:4px 12px;font-size:14px;color:var(--muted)}
+.pill b{font-family:var(--f-num);font-weight:700;color:var(--ink);font-size:17px;font-variant-numeric:tabular-nums}
+.day p{margin:0;max-width:72ch}
+.sched{list-style:none;margin:0;padding:0;display:grid;gap:4px;border-left:3px solid var(--line);padding-left:12px}
+.sched li{display:grid;grid-template-columns:62px 1fr;gap:8px;font-size:15px}
+.sched time{font-family:var(--f-num);font-weight:600;color:var(--green);font-variant-numeric:tabular-nums}
+.prof{background:var(--sunk);border-radius:10px;padding:10px 12px 6px}
+.prof svg{display:block;width:100%;height:auto}
+.prof .cap{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.alert{background:var(--warn-bg);border-left:5px solid var(--warn);border-radius:8px;padding:9px 12px;font-size:15px}
+.alert b{color:var(--warn)}
+.picnic{font-size:15px;color:var(--muted)}
+.picnic b{color:var(--ink)}
+.stay{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:15px;border-top:1px dashed var(--line);padding-top:10px}
+.stay .lbl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 14px;font:inherit;font-weight:700;font-size:15px;cursor:pointer;text-decoration:none}
+.btn:hover{border-color:var(--lime)}
+.btn.pri{background:var(--lime);border-color:var(--lime);color:var(--on-lime)}
+.btn:disabled{opacity:.55;cursor:progress}
+.btn svg{width:18px;height:18px;flex:0 0 auto}
+@media (max-width:620px){
+  .day{grid-template-columns:minmax(0,1fr)}
+  .day .rail{flex-direction:row;justify-content:flex-start;gap:10px;padding:10px 16px;border-right:0;border-bottom:1px solid var(--line);align-items:baseline}
+  .rail .dn{font-size:30px}
+  .rail .tag{margin:0 0 0 auto;border-top:0;padding:0}
+  .day h3{font-size:26px}
+}
+
+/* hotels */
+.hotels{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.hotel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.hotel .town{font-family:var(--f-display);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green);font-size:15px}
+.hotel h3{font-size:28px;text-transform:uppercase}
+.hotel .stars{color:var(--lime);letter-spacing:2px;font-size:15px}
+.hotel .nights{display:inline-flex;align-self:flex-start;background:var(--green-bg);color:var(--green);border-radius:99px;padding:3px 12px;font-weight:700;font-size:14px}
+.hotel p{margin:0;font-size:15px;color:var(--muted)}
+.hotel .addr{font-size:15px;color:var(--ink)}
+.hotel .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
+.tel{font-family:var(--f-num);font-weight:600;user-select:all}
+
+/* photo band */
+.band{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-top:8px}
+.band img{width:100%;height:220px;object-fit:cover;border-radius:var(--r);display:block}
+@media (max-width:700px){.band{grid-template-columns:1fr 1fr}.band img:first-child{grid-column:1/-1}.band img{height:150px}}
+
+/* info */
+.info{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;border-top:5px solid var(--lime)}
+.card h3{font-size:22px;text-transform:uppercase;margin-bottom:6px}
+.card p{margin:0;font-size:15.5px}
+.card p + p{margin-top:8px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+@media (max-width:700px){.two{grid-template-columns:1fr}}
+.list{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.list li{display:grid;grid-template-columns:22px 1fr;gap:6px;font-size:15.5px}
+.list li::before{content:"";width:12px;height:12px;border-radius:3px;margin-top:6px;background:var(--lime)}
+.list.no li::before{background:transparent;border:2px solid var(--muted)}
+
+/* packing */
+.pack-top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+.meter{flex:1 1 220px;height:12px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--lime);border-radius:99px;transition:width .25s}
+.climate{background:var(--green-bg);border-radius:var(--r);padding:14px 18px;margin-bottom:14px;font-size:15.5px}
+.climate b{color:var(--green)}
+.pack{columns:3 260px;column-gap:14px}
+.grp{break-inside:avoid;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:14px}
+.grp h3{font-size:19px;text-transform:uppercase;margin-bottom:6px}
+.grp label{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:start;padding:5px 0;font-size:15px;cursor:pointer}
+.grp input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--green)}
+.grp label:has(input:checked) span{color:var(--muted);text-decoration:line-through}
+.tip{font-size:14.5px;color:var(--muted);margin:6px 0 0}
+
+/* contact */
+.contact{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px;align-items:stretch}
+@media (max-width:760px){.contact{grid-template-columns:1fr}}
+.who{background:var(--lime);color:var(--on-lime);border-radius:var(--r);padding:22px;display:grid;gap:8px}
+.who h3{font-size:34px;text-transform:uppercase}
+.who .big{font-family:var(--f-num);font-size:24px;font-weight:700;user-select:all}
+.who .btn{background:var(--on-lime);color:var(--lime);border-color:var(--on-lime);justify-self:start}
+footer{margin-top:44px;border-top:1px solid var(--line);padding-block:22px 40px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:700;z-index:40;max-width:calc(100% - 32px)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+</head>
+<body>
+
+
+<header class="bar"><div class="wrap">
+  <span class="logo"><img src="img/logo-black.jpg" alt="Travel Bikex"></span>
+  <nav class="nav" aria-label="Secciones">
+    <a href="#programa">Programa</a><a href="#hoteles">Hoteles</a><a href="#info">Información</a><a href="#maleta">Qué llevar</a><a href="#contacto">Contacto</a>
+  </nav>
+</div></header>
+
+<div class="hero"><div class="wrap">
+  <div class="kicker">Travel Bikex · Ciclismo de carretera</div>
+  <h1>Dolomitas <span>Road 2026</span></h1>
+  <p class="lead">Los puertos clásicos de los Alpes italianos, de Cortina d'Ampezzo al Stelvio, el Mortirolo y el Gavia. Del 11 al 18 de julio, de Venecia a Milán.</p>
+  <div class="status" id="status" hidden></div>
+  <div class="stats">
+    <div class="stat"><b>8</b><small>días</small></div>
+    <div class="stat"><b>6</b><small>etapas</small></div>
+    <div class="stat"><b>481</b><small>km</small></div>
+    <div class="stat"><b>12.240</b><small>m de desnivel +</small></div>
+    <div class="stat"><b>2.758</b><small>m · Passo Stelvio</small></div>
+  </div>
+  <div class="range" aria-hidden="true"><svg id="range" viewBox="0 0 1000 120" preserveAspectRatio="none"></svg><div class="lbls" id="rangeLbls"></div></div>
+</div></div>
+
+<main>
+<section id="programa"><div class="wrap">
+  <div class="sec-h"><h2>Programa <em>día a día</em></h2><p>Horarios, etapas y hotel de cada noche. Los perfiles salen de los tracks GPS del viaje.</p></div>
+  <div class="days" id="days"></div>
+  <div class="acts" style="margin-top:16px" id="allTracks"></div>
+</div></section>
+
+<section id="hoteles"><div class="wrap">
+  <div class="sec-h"><h2>Los <em>hoteles</em></h2><p>Alojamiento con desayuno en habitación doble. Vuestra maleta os espera en cada hotel: la llevamos nosotros.</p></div>
+  <div class="hotels" id="hotelList"></div>
+  <div class="band"><img src="img/curva.jpg" alt="Carretera de montaña entre pinos en los Dolomitas" loading="lazy"><img src="img/stelvio.jpg" alt="Curvas del Passo dello Stelvio" loading="lazy"><img src="img/merano.jpg" alt="Jardines de Merano" loading="lazy"></div>
+</div></section>
+
+<section id="info"><div class="wrap">
+  <div class="sec-h"><h2>Información <em>práctica</em></h2><p>Lo que conviene saber antes de salir de casa.</p></div>
+  <div class="info">
+    <div class="card"><h3>Punto de encuentro</h3><p><b>11 de julio, 15:00 h</b>, aeropuerto internacional Marco Polo de Venecia. Desde allí vamos todos juntos a Cortina d'Ampezzo (unas 2 horas). Si no podéis llegar a esa hora, tendréis que tomar un transfer privado por vuestra cuenta.</p></div>
+    <div class="card"><h3>Final del viaje</h3><p><b>18 de julio</b>. Salimos de Bormio a las 9:00 h hacia el aeropuerto de Milán Malpensa (unas 3 h 30 min) y llegamos sobre las 12:30 h. Recomendamos no tomar vuelos que salgan antes de las 15:00 h. Si vais a Milán centro u otro aeropuerto, podéis seguir en transfer o tren.</p></div>
+    <div class="card"><h3>Etapas autoguiadas</h3><p>No hay guía en ruta, pero sí vehículo de apoyo que os ayuda en los tramos y cruces más complicados. Cada ciclista tiene los tracks para el móvil o el Garmin. El grupo debe ir junto, con reagrupamientos en las cimas y cruces que indiquen los guías.</p></div>
+    <div class="card"><h3>Comidas</h3><p>Desayuno en los hoteles, picnic o restaurante a mediodía los días de etapa y cenas en hotel o restaurante. Refrescos y bebidas alcohólicas no están incluidos, salvo que lo indique el guía. Si tenéis alguna intolerancia, avisadnos.</p></div>
+    <div class="card"><h3>Hoteles</h3><p>Alojamiento y desayuno en habitación doble; algunas noches también la cena. Las bebidas de las cenas y cualquier extra se pagan en el hotel antes de salir.</p></div>
+    <div class="card"><h3>Equipaje</h3><p>Una maleta por persona, de <b>23 kg como máximo</b>. Llevad todo dentro de la maleta durante el viaje para no perder cosas sin identificar. Ponedle la etiqueta con vuestro número que os daremos.</p></div>
+    <div class="card"><h3>Teléfono</h3><p>Llevad el móvil operativo con datos y llamadas para poder hablar con los guías en cualquier momento.</p></div>
+    <div class="card"><h3>Documentación</h3><p>Traed una foto del pasaporte plastificada para llevarla encima durante las etapas.</p></div>
+    <div class="card"><h3>Seguro</h3><p>El viaje <b>no incluye seguro de accidentes</b>. Es imprescindible traer un seguro deportivo con buenas coberturas; muchos seguros de viaje necesitan una ampliación para cubrir el ciclismo.</p></div>
+    <div class="card"><h3>Bicicletas</h3><p>Entrega de las bicis de alquiler el 11 de julio a las 17:00 h en el hotel de Cortina, con revisión y ajuste de posición: traed vuestras medidas anotadas. Se devuelven el 17 al terminar la última etapa, en Bormio. El casco es obligatorio.</p></div>
+  </div>
+  <div class="two">
+    <div class="card"><h3>El viaje incluye</h3><ul class="list">
+      <li>Alojamiento y desayuno 7 noches en hoteles de 3 y 4 estrellas</li><li>Traslados de ida y vuelta a los aeropuertos indicados</li><li>Traslado de equipajes entre hoteles</li><li>Vehículo y chófer siempre en ruta, y un segundo vehículo para emergencias</li><li>Picnics completos en ruta</li><li>7 cenas en hoteles y restaurantes</li><li>Tracks GPS y documentación de cada etapa</li><li>Dossier del viaje y selección de restaurantes de la zona</li></ul></div>
+    <div class="card" style="border-top-color:var(--muted)"><h3>No incluye</h3><ul class="list no">
+      <li>Guía de ciclismo en ruta</li><li>Bicicletas de alquiler</li><li>Refrescos y bebidas alcohólicas en las comidas</li><li>Spa, entradas a monumentos y catas</li><li>Seguro de accidentes</li></ul></div>
+  </div>
+</div></section>
+
+<section id="maleta"><div class="wrap">
+  <div class="sec-h"><h2>Qué <em>llevar</em></h2><p>Máximo confort con el mínimo peso. Marca lo que ya tienes en la maleta: se queda guardado en este dispositivo.</p></div>
+  <div class="climate"><b>Clima en julio:</b> en los valles las máximas rondan los 30 °C y las mínimas los 20 °C, pero en las cimas puede bajar a 10 °C y son habituales las tormentas de verano. Os daremos una mochila «de ataque» que irá en la furgoneta de asistencia, para cambiaros o abrigaros antes de las bajadas.</div>
+  <div class="pack-top"><b class="num" id="packCount">0 / 0</b><div class="meter"><i id="packBar" style="width:0%"></i></div><button class="btn" id="packReset" type="button">Desmarcar todo</button></div>
+  <div class="pack" id="pack"></div>
+  <p class="tip">Consejo: dobla bien la ropa y usa bolsas de distintos colores para encontrarlo todo de un vistazo. Prueba antes del viaje que la ropa de ciclismo es de tu talla.</p>
+</div></section>
+
+<section id="contacto"><div class="wrap">
+  <div class="sec-h"><h2>Contacto</h2></div>
+  <div class="contact">
+    <div class="who"><span class="kicker" style="color:var(--on-lime)">Travel Bikex</span><h3>Nuria Rozalén</h3>
+      <div class="big">+34 695 115 789</div><div class="num" style="font-weight:600;user-select:all">nuria@travelbikex.com</div>
+      <button class="btn" type="button" data-copy="+34 695 115 789">Copiar teléfono</button></div>
+    <div class="card"><h3>Durante el viaje</h3><p>Os acompañan nuestros guías <b>Nuria y Enzo</b> en las furgonetas de asistencia, desde el encuentro en Venecia hasta la llegada a Malpensa.</p><p>Para cualquier duda sobre el equipaje o la lista de material, escribidnos: estaremos encantados de ayudaros.</p><p><a href="https://www.travelbikex.com" target="_blank" rel="noopener">www.travelbikex.com</a></p></div>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap"><span class="logo"><img src="img/logo-black.jpg" alt="Travel Bikex" style="height:24px"></span><span>TBX Eventos y Actividades Deportivas S.L.U. · Cercedilla (Madrid)</span></div></footer>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const PROFILES={"4":{"km":95.4,"ele":[1528,1543,1577,1619,1665,1710,1738,1786,1827,1873,1914,1947,1989,2028,2070,2102,2097,2066,2033,2013,2015,2016,2002,1951,1915,1863,1828,1781,1733,1684,1637,1597,1574,1557,1537,1510,1481,1454,1426,1397,1368,1347,1328,1286,1254,1230,1213,1188,1169,1155,1140,1124,1108,1073,1017,963,911,851,801,763,732,703,671,637,593,551,516,494,474,471,477,465,448,441,434,428,424,417,407,397,389,381,374,370,364,353,347,341,336,330,325,321,318,316,313,310,303,300,296,290,285,283,279,274,270,266,264,262,259,255,252,250,248,244,242,241,241,242,242,243,243,244,244,245,246,246,247,247,248,248,249,249,250,251,251,252,252,253,254,255,256,257,258,259,260,262,263,264,266,268,270,272,274,276,281,287,291,300,304,304,304],"max":2124,"min":239},"1":{"km":55.7,"ele":[1214,1217,1216,1226,1249,1273,1295,1322,1349,1377,1406,1428,1452,1473,1498,1523,1553,1577,1601,1624,1647,1674,1700,1728,1752,1765,1756,1727,1699,1685,1681,1683,1684,1675,1659,1640,1628,1638,1657,1681,1700,1715,1722,1725,1730,1742,1764,1800,1825,1840,1830,1817,1810,1819,1845,1872,1910,1948,1991,2035,2081,2122,2165,2207,2249,2288,2310,2290,2284,2276,2236,2194,2150,2109,2067,2023,1978,1938,1904,1870,1846,1836,1840,1852,1862,1857,1829,1783,1758,1748,1745,1740,1736,1726,1705,1673,1650,1618,1603,1589,1572,1549,1524,1509,1489,1477,1463,1453,1455,1464,1474,1486,1500,1513,1523,1528,1528,1524,1519,1514,1513,1511,1509,1506,1501,1496,1491,1488,1487,1489,1491,1487,1480,1470,1458,1441,1425,1410,1393,1377,1362,1348,1337,1325,1315,1307,1303,1301,1298,1298,1298,1295,1290,1281,1271,1261,1252,1241,1228,1219,1215],"max":2325,"min":1205},"5":{"km":93.7,"ele":[315,314,313,316,328,343,366,399,438,476,503,512,515,517,517,517,519,521,522,523,523,525,529,529,529,531,536,543,550,552,555,557,560,562,566,569,569,568,570,579,591,606,622,630,635,640,638,641,649,651,654,659,663,668,674,681,686,693,701,713,725,735,752,771,787,806,828,849,860,865,867,864,862,863,864,867,869,871,878,889,886,881,884,885,887,895,907,918,930,951,984,1029,1059,1081,1112,1141,1182,1217,1239,1299,1302,1418,1440,1472,1509,1550,1587,1646,1721,1762,1811,1867,1924,1978,2033,2090,2145,2200,2259,2318,2375,2433,2486,2536,2589,2643,2697,2742,2750,2710,2651,2597,2540,2488,2447,2409,2382,2358,2335,2303,2263,2208,2156,2110,2011,1920,1897,1873,1872,1872,1872,1872,1514,1494,1468,1425,1342,1287,1266,1238,1223],"max":2767,"min":309},"6":{"km":50.8,"ele":[1231,1237,1245,1258,1279,1306,1331,1345,1349,1347,1347,1350,1357,1366,1371,1375,1385,1395,1405,1419,1446,1467,1481,1497,1518,1546,1578,1597,1615,1631,1654,1675,1690,1703,1714,1725,1731,1733,1736,1746,1769,1788,1818,1843,1868,1886,1907,1932,1953,1974,1995,2011,2034,2058,2083,2114,2136,2163,2185,2210,2224,2245,2272,2300,2337,2367,2395,2415,2435,2454,2471,2484,2490,2492,2501,2513,2524,2539,2553,2557,2559,2557,2553,2539,2524,2512,2501,2492,2490,2484,2471,2454,2434,2414,2394,2367,2337,2300,2272,2244,2224,2209,2185,2163,2136,2113,2083,2058,2034,2011,1995,1973,1953,1932,1907,1886,1868,1843,1817,1788,1769,1746,1735,1733,1731,1724,1714,1702,1690,1675,1654,1631,1615,1597,1578,1546,1518,1497,1481,1466,1445,1418,1404,1395,1385,1375,1371,1366,1357,1350,1347,1347,1349,1345,1331,1305,1279,1258,1245,1237,1231],"max":2563,"min":1228},"2":{"km":66.2,"ele":[1195,1197,1201,1226,1243,1276,1303,1328,1350,1384,1397,1413,1476,1494,1521,1532,1534,1528,1520,1524,1535,1567,1592,1622,1657,1693,1728,1747,1802,1830,1868,1912,1963,1999,2035,2075,2100,2137,2179,2213,2217,2192,2168,2109,2081,2032,2002,1964,1921,1877,1834,1803,1774,1760,1735,1701,1657,1616,1544,1490,1454,1443,1434,1359,1339,1355,1373,1391,1406,1436,1455,1469,1471,1460,1423,1396,1370,1339,1310,1318,1372,1380,1387,1409,1437,1450,1456,1472,1481,1498,1520,1546,1570,1587,1627,1647,1673,1712,1730,1753,1781,1806,1838,1857,1884,1915,1937,1961,1982,1999,2031,2072,2096,2117,2150,2175,2188,2168,2147,2122,2081,2050,2020,1971,1934,1905,1872,1833,1800,1771,1736,1710,1684,1661,1652,1642,1630,1619,1606,1582,1551,1535,1528,1515,1493,1477,1462,1428,1411,1409,1428,1436,1437,1445,1460,1471,1493,1506,1508,1510,1514],"max":2238,"min":1189},"3":{"km":51.6,"ele":[1528,1540,1557,1575,1598,1625,1645,1674,1685,1702,1716,1733,1751,1775,1792,1818,1837,1851,1868,1875,1859,1835,1820,1784,1763,1740,1703,1683,1658,1632,1610,1600,1607,1627,1654,1673,1701,1732,1750,1769,1796,1825,1843,1869,1886,1913,1939,1957,1983,2007,2027,2051,2066,2095,2111,2137,2153,2173,2202,2221,2230,2215,2198,2176,2157,2135,2110,2087,2073,2044,2025,2004,1985,1963,1939,1921,1899,1874,1852,1822,1819,1828,1863,1877,1902,1938,1962,1994,2011,2048,2069,2100,2128,2154,2177,2201,2222,2235,2224,2203,2186,2164,2136,2118,2080,2062,2027,1997,1987,1952,1939,1927,1906,1883,1883,1908,1928,1944,1982,1999,2016,2019,2016,2014,2014,2012,2017,2038,2057,2076,2097,2113,2106,2085,2063,2039,2021,1999,1977,1957,1933,1916,1893,1866,1851,1827,1804,1782,1750,1732,1715,1692,1667,1647,1622,1601,1586,1548,1540,1524,1523],"max":2244,"min":1520}};
+(function(){
+"use strict";
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = n => new Intl.NumberFormat("es-ES").format(n);
+const HOT = {
+  mirage:{town:"Cortina d'Ampezzo",name:"Hotel Mirage",stars:4,nights:"11 y 12 de julio · 2 noches",addr:"Loc. Peziè 118, 32043 Cortina d'Ampezzo (BL)",tel:"+39 0436 868510",
+    desc:"A la entrada de Cortina, con habitaciones luminosas y vistas a las montañas. Centro de bienestar gratuito con piscina cubierta climatizada, sauna e hidromasaje, y jardín con terraza.",regimen:"Media pensión: cena en el hotel las dos noches."},
+  fanes:{town:"Corvara in Badia",name:"Hotel Gran Fanes",stars:3,nights:"13 y 14 de julio · 2 noches",addr:"Strada Agà 44, 39033 Corvara in Badia (BZ)",tel:"+39 0471 836225",
+    desc:"En Corvara, un pequeño pueblo alpino al pie del macizo del Sella, punto de partida de la Sella Ronda.",regimen:"Cena en el hotel la primera noche."},
+  flora:{town:"Merano",name:"Flora Hotel & Suites",stars:3,nights:"15 de julio · 1 noche",addr:"Via XXX Aprile 2, 39012 Merano (BZ)",tel:"+39 0473 448335",
+    desc:"En Merano, con piscina exterior de temporada, bar, salón y jardín con terraza. Desayuno continental o buffet.",regimen:"Cena en un restaurante del centro."},
+  nevada:{town:"Bormio",name:"Hotel Nevada",stars:0,nights:"16 y 17 de julio · 2 noches",addr:"Via Battaglione Morbegno 21, 23032 Bormio (SO)",tel:"+39 0342 910888",
+    desc:"En Bormio, pueblo alpino a los pies del Stelvio y el Gavia, perfecto para pasear por la tarde.",regimen:"Cena en el hotel la primera noche."}
+};
+const DAYS = [
+ {d:"2026-07-11",tag:"Llegada",title:"Venecia – Cortina d'Ampezzo",ride:false,pills:[["148","km en furgoneta"],["2 h","de traslado"]],
+  text:"Nos encontramos en el aeropuerto Marco Polo de Venecia y vamos en vehículos privados hasta Cortina d'Ampezzo, el corazón de los Dolomitas italianos. Por el camino aparecen los primeros paisajes alpinos del viaje.",
+  sched:[["15:00","Encuentro en el aeropuerto Marco Polo de Venecia y traslado a Cortina"],["17:00","Entrega de las bicis de alquiler, prueba y ajustes (traed vuestras medidas)"],["20:15","Cena en el restaurante del hotel"]],hotel:"mirage"},
+ {d:"2026-07-12",tag:"Etapa 1",n:1,title:"Cortina – Tre Cime di Lavaredo",ride:true,km:56,up:1564,
+  text:"Etapa circular que sale y vuelve a Cortina subiendo a uno de los lugares más bellos de los Dolomitas: las Tre Cime di Lavaredo, pasando por el Passo Tre Croci y el lago de Misurina. Tarde libre para hacer turismo por Cortina.",
+  sched:[["8:00","Desayuno en el hotel"],["9:00","Salida de la etapa"],["14:00","Almuerzo tipo picnic o restaurante en Cortina"],["20:15","Cena en el restaurante del hotel"]],
+  picnic:"Picnic ligero a mitad de etapa junto al lago de Misurina.",hotel:"mirage"},
+ {d:"2026-07-13",tag:"Etapa 2",n:2,title:"Cortina – Corvara",ride:true,km:67,up:2450,
+  text:"Etapa en línea: dejamos Cortina para encadenar el Passo Giau, el Passo Falzarego y el Passo Valparola, tres puertos míticos del Giro de Italia con paisajes increíbles.",
+  sched:[["8:00","Desayuno en el hotel"],["9:00","Salida de la etapa"],["15:00","Llegada a Corvara in Badia y almuerzo (picnic o restaurante)"],["20:30","Cena en el restaurante del hotel"]],
+  picnic:"Picnics ligeros en el Passo Giau y en el Valparola, si el tiempo lo permite.",hotel:"fanes"},
+ {d:"2026-07-14",tag:"Etapa 3",n:3,title:"Sella Ronda",ride:true,km:55,up:1700,
+  text:"Etapa corta pero intensa con los cuatro puertos que rodean el Sella: Campolongo, Pordoi, Sella y Gardena. Acantilados, pastos verdes, vistas al Sassolungo y bajadas espectaculares hacia los valles. Tarde de descanso en Corvara.",
+  sched:[["8:00","Desayuno en el hotel"],["9:00","Salida de la etapa"],["15:00","Llegada a Corvara y picnic o restaurante"],["20:15","Encuentro en el hall del hotel para salir a cenar"]],
+  picnic:"Picnics ligeros en las cimas de los puertos.",hotel:"fanes"},
+ {d:"2026-07-15",tag:"Etapa 4",n:4,title:"Corvara – Merano",ride:true,km:95,up:790,
+  text:"Etapa sencilla y de transición: subimos al Passo Gardena para despedirnos de los Dolomitas y bajamos hasta el valle de Merano, famoso por sus ríos y sus manzanos. Tarde libre para pasear por la ciudad.",
+  sched:[["8:00","Desayuno en el hotel"],["9:00","Salida de la etapa"],["16:00","Llegada a Merano y almuerzo ligero"],["20:15","Encuentro en el punto indicado para cenar en un restaurante del centro"]],
+  picnic:"Picnic ligero y picnic de almuerzo en ruta, si el tiempo lo permite.",alert:"En la bajada hay túneles y tramos de carril bici: seguid las indicaciones del track.",hotel:"flora"},
+ {d:"2026-07-16",tag:"Etapa 5",n:5,title:"Merano – Passo dello Stelvio – Bormio",ride:true,km:98,up:2586,
+  text:"Del valle de Venosta a uno de los puertos más míticos del Giro de Italia: el Passo dello Stelvio, 21,9 km de subida hasta los 2.758 m y sus famosas curvas de herradura. Bajamos por la otra vertiente hasta Bormio para pasar la tarde en este bonito pueblo alpino.",
+  sched:[["8:00","Desayuno en el hotel"],["9:00","Salida de la etapa"],["17:00","Llegada a Bormio"],["20:15","Cena en el restaurante del hotel"]],
+  picnic:"Varios picnics a lo largo de la etapa, si el tiempo lo permite.",alert:"Hay 6 túneles en 9 km. En la cima puede hacer mucho frío: llevad abrigo para la bajada en la mochila de ataque.",hotel:"nevada"},
+ {d:"2026-07-17",tag:"Etapa 6",n:6,title:"Bormio – Mortirolo – Gavia – Bormio",ride:true,km:110,up:3150,
+  text:"El día más épico: por el valle del Adda hasta el lado clásico del Mortirolo, con una carretera estrecha y rampas medias del 10,5 %, y después el Passo di Gavia, con algunas de las vistas más bonitas del viaje. Regreso a Bormio y devolución de las bicis de alquiler.",
+  sched:[["8:00","Desayuno en el hotel"],["9:00","Salida de la etapa"],["Tarde","Llegada a Bormio, devolución de bicis y tarde libre"],["20:15","Encuentro en el hall para salir a cenar"]],
+  picnic:"Picnic ligero y picnic de almuerzo a lo largo de la etapa.",alert:"Opción más corta: solo el Passo di Gavia por Santa Caterina, 52 km y 1.450 m de desnivel. El perfil y el track de esta página son de esta opción.",hotel:"nevada",profNote:"Perfil de la opción Gavia por Santa Caterina"},
+ {d:"2026-07-18",tag:"Salida",title:"Bormio – Milán Malpensa",ride:false,pills:[["217","km en furgoneta"],["3 h 30","de traslado"]],
+  text:"Tras el desayuno vamos todos juntos al aeropuerto de Milán Malpensa. Si vais a Milán centro u otro aeropuerto, podéis seguir en transfer o tren. Fin del viaje.",
+  sched:[["8:00","Desayuno en el hotel"],["9:00","Salida hacia el aeropuerto de Malpensa"],["12:30","Llegada al aeropuerto (mejor vuelos a partir de las 15:00 h)"]]}
+];
+const PACK = [
+ ["Documentación",["DNI o pasaporte (y una fotocopia siempre encima)","Foto del pasaporte plastificada","Seguro deportivo con cobertura de ciclismo"]],
+ ["Bolsa de viaje",["Maleta o bolsa mediana (23 kg máximo)","Pegatinas identificativas y candado","Etiqueta con tu número de Travel Bikex"]],
+ ["Equipamiento de ciclismo",["Casco (obligatorio)","Zapatillas de ciclismo","Bidón o mochila de hidratación","Gafas de ciclismo","Guantes (mejor dos pares)","Medidas de tu bici anotadas"]],
+ ["Repuestos",["Bomba de mano o bombonas de CO₂","Bolsa portaherramientas","Kit de pinchazos: desmontables, parches y cámaras","Multiherramienta (recomendado)","Tronchacadenas (recomendado)"]],
+ ["Ropa de ciclismo",["Maillot de manga corta","Maillot de manga larga o manguitos","Camiseta térmica de manga larga","Culote corto","Culote largo o perneras","Chubasquero transpirable","Chaleco o chaqueta cortavientos","Calcetines de invierno"]],
+ ["Ropa de calle",["Ropa ligera de secado rápido para las tardes","Calzado cómodo","Jersey o chaqueta para la noche","Camisetas de manga corta y larga","Chaqueta de abrigo","Pantalones largos","Calcetines"]],
+ ["Accesorios",["Gafas de sol","Protector solar alto y cacao","Neceser","Medicamentos personales (avisad a los guías)","Repelente de insectos","Crema antirrozaduras","Móvil con datos y cargador"]],
+ ["Opcional",["Libro o cuaderno","Reloj o despertador","Bolsas tipo Ziploc","Buff","Gafas o lentillas de repuesto"]]
+];
+const fDay = new Intl.DateTimeFormat("es-ES",{weekday:"long"});
+const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
+const now = new Date(); const todayIso = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+const icoDl = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>';
+
+function toast(m){ const t=$("#toast"); t.textContent=m; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,3200); }
+
+/* status chip */
+(function(){
+  const st = $("#status"); const a = "2026-07-11", b = "2026-07-18";
+  if (todayIso < a){ const n = Math.round((parse(a)-parse(todayIso))/86400000); st.textContent = n===1 ? "Mañana empieza el viaje" : `Faltan ${n} días`; st.hidden=false; }
+  else if (todayIso <= b){ st.textContent = "Viaje en curso · hoy es " + fDay.format(now); st.hidden=false; }
+})();
+
+/* hero range: all stage silhouettes side by side, width by km */
+(function(){
+  const ids = [1,2,3,4,5,6]; const tot = ids.reduce((a,i)=>a+PROFILES[i].km,0);
+  const top = 2800, bot = 200, H = 120; let x = 0, paths = "", lbls = "";
+  ids.forEach(i => {
+    const p = PROFILES[i], w = p.km/tot*1000, n = p.ele.length-1;
+    const pts = p.ele.map((e,k) => `${(x + k/n*w).toFixed(1)},${(H - (e-bot)/(top-bot)*H).toFixed(1)}`);
+    paths += `<path d="M${x.toFixed(1)},${H} L${pts.join(" L")} L${(x+w).toFixed(1)},${H} Z" fill="var(--lime)" fill-opacity="${i%2?0.95:0.75}"/>`;
+    lbls += `<span style="width:${(w/10).toFixed(2)}%">E${i}</span>`;
+    x += w;
+  });
+  $("#range").innerHTML = paths; $("#rangeLbls").innerHTML = lbls;
+})();
+
+function profileSvg(n){
+  const p = PROFILES[n]; if (!p) return "";
+  const W = window.innerWidth < 620 ? 340 : 600, H = window.innerWidth < 620 ? 130 : 150, padL=36,padB=18,padT=8; const lo = Math.floor(p.min/500)*500, hi = Math.ceil(p.max/500)*500;
+  const X = k => padL + k/(p.ele.length-1)*(W-padL-4), Y = e => padT + (1-(e-lo)/(hi-lo))*(H-padT-padB);
+  const line = p.ele.map((e,k)=>`${X(k).toFixed(1)},${Y(e).toFixed(1)}`).join(" L");
+  let grid = ""; for (let v=lo; v<=hi; v+=500){ grid += `<line x1="${padL}" x2="${W-4}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--line)" stroke-width="1"/><text x="${padL-6}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="Saira, sans-serif">${fmt(v)}</text>`; }
+  let ticks = ""; const step = p.km > 70 ? 20 : 10; for (let k=0; k<=p.km; k+=step){ const x = padL + k/p.km*(W-padL-4); ticks += `<text x="${x.toFixed(1)}" y="${H-3}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="Saira, sans-serif">${k}</text>`; }
+  const im = p.ele.indexOf(Math.max(...p.ele));
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Perfil de la etapa ${n}: de ${fmt(p.min)} a ${fmt(p.max)} m">
+    ${grid}<path d="M${X(0)},${H-padB} L${line} L${X(p.ele.length-1)},${H-padB} Z" fill="var(--lime)" fill-opacity=".35"/><path d="M${line}" fill="none" stroke="var(--green)" stroke-width="2"/>
+    <circle cx="${X(im).toFixed(1)}" cy="${Y(p.ele[im]).toFixed(1)}" r="4" fill="var(--green)"/><text x="${Math.min(X(im),W-40).toFixed(1)}" y="${(Y(p.ele[im])-8).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)" font-family="Saira, sans-serif">${fmt(p.max)} m</text>${ticks}</svg>`;
+}
+
+/* days */
+$("#days").innerHTML = DAYS.map(D => {
+  const dt = parse(D.d); const h = HOT[D.hotel];
+  const pills = D.ride ? `<span class="pill"><b>${D.km}</b> km</span><span class="pill"><b>${fmt(D.up)}</b> m desnivel +</span><span class="pill">Salida <b>9:00</b></span>`
+    : D.pills.map(([v,l]) => `<span class="pill"><b>${esc(v)}</b> ${esc(l)}</span>`).join("");
+  return `<article class="day ${D.ride?"ride":""} ${D.d===todayIso?"today":""}" id="d${D.d}">
+    <div class="rail"><span class="dn">${dt.getDate()}</span><span class="mo">julio</span><span class="wd">${fDay.format(dt)}</span><span class="tag">${esc(D.tag)}</span></div>
+    <div class="body">
+      <h3>${esc(D.title)}</h3>
+      <div class="pills">${pills}</div>
+      <p>${esc(D.text)}</p>
+      ${D.alert?`<div class="alert"><b>Atención.</b> ${esc(D.alert)}</div>`:""}
+      ${D.n?`<div class="prof">${profileSvg(D.n)}<div class="cap"><span>${esc(D.profNote||"Perfil del track")} · altitud en metros, distancia en km</span>${D.n<=5?`<a href="img/perfil${D.n}.jpg" target="_blank" rel="noopener">Ver perfil oficial</a>`:""}</div></div>`:""}
+      <ul class="sched">${D.sched.map(([t,s]) => `<li><time>${esc(t)}</time><span>${esc(s)}</span></li>`).join("")}</ul>
+      ${D.picnic?`<div class="picnic"><b>Picnic:</b> ${esc(D.picnic)}</div>`:""}
+      ${D.n?`<div class="acts"><button class="btn pri" type="button" data-track="${D.n}">${icoDl}Descargar track GPX</button></div>`:""}
+      ${h?`<div class="stay"><span class="lbl">Noche en</span><a href="#h-${D.hotel}"><b>${esc(h.name)}</b></a><span>· ${esc(h.town)}</span></div>`:""}
+    </div></article>`;
+}).join("");
+$("#allTracks").innerHTML = `<button class="btn" type="button" data-track="all">${icoDl}Descargar los 6 tracks (.zip)</button>`;
+
+/* hotels */
+$("#hotelList").innerHTML = Object.entries(HOT).map(([k,h]) => `<article class="hotel" id="h-${k}">
+  <span class="town">${esc(h.town)}</span><h3>${esc(h.name)} ${h.stars?`<span class="stars" aria-label="${h.stars} estrellas">${"★".repeat(h.stars)}</span>`:""}</h3>
+  <span class="nights">${esc(h.nights)}</span><p>${esc(h.desc)}</p><p><b style="color:var(--ink)">${esc(h.regimen)}</b></p>
+  <div class="addr">${esc(h.addr)}</div><div class="tel">${esc(h.tel)}</div>
+  <div class="row"><a class="btn" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.name+", "+h.addr)}" target="_blank" rel="noopener">Ver en el mapa</a><button class="btn" type="button" data-copy="${esc(h.tel)}">Copiar teléfono</button></div>
+</article>`).join("");
+
+/* packing list (per-device memory) */
+let packed = {}; try { packed = JSON.parse(localStorage.getItem("dol26_pack")||"{}") || {}; } catch(e){ packed = {}; }
+let total = 0;
+$("#pack").innerHTML = PACK.map(([g,items],gi) => `<div class="grp"><h3>${esc(g)}</h3>${items.map((it,ii) => { total++; const id=`p${gi}_${ii}`;
+  return `<label for="${id}"><input type="checkbox" id="${id}" ${packed[id]?"checked":""}><span>${esc(it)}</span></label>`; }).join("")}</div>`).join("");
+function packUpd(){ const n = Object.values(packed).filter(Boolean).length; $("#packCount").textContent = `${n} / ${total}`; $("#packBar").style.width = (n/total*100).toFixed(1)+"%"; }
+packUpd();
+$("#pack").addEventListener("change", e => { if (e.target.type!=="checkbox") return; packed[e.target.id] = e.target.checked; try { localStorage.setItem("dol26_pack", JSON.stringify(packed)); } catch(err){} packUpd(); });
+$("#packReset").addEventListener("click", () => { packed = {}; document.querySelectorAll("#pack input").forEach(i => i.checked=false); try { localStorage.removeItem("dol26_pack"); } catch(e){} packUpd(); });
+
+/* copy */
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-copy]"); if (!b) return;
+  try { await navigator.clipboard.writeText(b.dataset.copy); toast("Copiado: " + b.dataset.copy); } catch(err){ toast(b.dataset.copy); }
+});
+
+
+/* tracks */
+const NAMES = {1:"Etapa_1_Cortina_Tre_Cime",2:"Etapa_2_Cortina_Corvara",3:"Etapa_3_Sella_Ronda",4:"Etapa_4_Corvara_Merano",5:"Etapa_5_Merano_Stelvio_Bormio",6:"Etapa_6_Bormio_Gavia_Santa_Caterina"};
+const saveBlob = (name, blob) => { const u = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 5000); };
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-track]"); if (!b) return;
+  const ids = b.dataset.track === "all" ? [1,2,3,4,5,6] : [+b.dataset.track];
+  b.disabled = true;
+  try {
+    if (ids.length === 1){
+      const r = await fetch(`tracks/${NAMES[ids[0]]}.gpx`); if (!r.ok) throw new Error("fetch");
+      saveBlob(`${NAMES[ids[0]]}.gpx`, await r.blob());
+      toast("Descargado. Carga el .gpx en tu Garmin o app.");
+    } else {
+      if (!window.JSZip) throw new Error("zip");
+      const zip = new JSZip();
+      for (const n of ids){ const r = await fetch(`tracks/${NAMES[n]}.gpx`); if (!r.ok) throw new Error("fetch"); zip.file(`${NAMES[n]}.gpx`, await r.text()); }
+      saveBlob("Tracks_Dolomitas_Road_2026.zip", await zip.generateAsync({type:"blob", compression:"DEFLATE"}));
+      toast("Descargado. Descomprime el .zip y carga los .gpx en tu Garmin o app.");
+    }
+  } catch(err){ if (!(err && err.code==="declined")) toast("No se pudo descargar el track. Inténtalo de nuevo."); }
+  b.disabled = false;
+});
+})();
+</script>
+
+</body>
+</html>
