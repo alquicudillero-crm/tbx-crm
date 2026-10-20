@@ -96,7 +96,7 @@ main{min-width:0;padding-block:22px 70px;padding-left:28px;padding-right:max(16p
 .trip-item:hover{background:var(--surface);border-color:var(--line)}
 .trip-item.sel{background:var(--surface);border-color:var(--accent);box-shadow:var(--shadow)}
 .trip-item .rail{border-radius:3px;background:var(--line)}
-.trip-item.t-bici .rail{background:var(--s-eta)} .trip-item.t-trek .rail{background:var(--s-gas)} .trip-item.t-otro .rail{background:var(--s-bal)}
+.trip-item.t-bici .rail{background:var(--s-eta)} .trip-item.t-emtb .rail{background:var(--s-bic)} .trip-item.t-trek .rail{background:var(--s-gas)} .trip-item.t-otro .rail{background:var(--s-bal)}
 .trip-item b{display:block;font-weight:600;font-size:14.5px;line-height:1.25}
 .trip-item span{font-size:12.5px;color:var(--muted)}
 .gen-btn{display:flex;align-items:center;gap:10px;border:0;border-radius:var(--r);padding:12px 14px;background:var(--brand-grad);color:#0b0b0b;font-weight:800;cursor:pointer;text-align:left;width:100%}
@@ -401,6 +401,7 @@ td.r,th.r{text-align:right}
 .pub-live{background:var(--ok-bg);border-radius:10px;padding:10px 12px;gap:6px}
 .pub-live a{word-break:break-all;font-weight:600;color:var(--ok)}
 .pub-live .acts{display:flex;gap:8px;flex-wrap:wrap}
+.plantilla-box{background:var(--s-bic-bg);border-radius:10px;padding:10px 12px}
 .empty{max-width:560px;margin:40px auto;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;color:var(--muted)}
 .empty h2{color:var(--ink);font-size:28px;text-transform:uppercase}
 .overlay{position:fixed;inset:0;background:rgba(10,18,14,.5);display:grid;place-items:center;z-index:50;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
@@ -466,7 +467,7 @@ const fLong = new Intl.DateTimeFormat("es-ES",{weekday:"long",day:"numeric",mont
 const parse = s => { if(!s) return null; const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
 const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const todayIso = iso(new Date());
-const TIPOS = {bici:"Cicloturismo", trek:"Trekking", otro:"Otro"};
+const TIPOS = {bici:"Cicloturismo", emtb:"E-bike de montaña", trek:"Trekking", otro:"Otro"};
 const CATS = {comida:"Comidas", repostaje:"Repostajes", hotel:"Hoteles", super:"Supermercado", peaje:"Peajes y parking", bicis:"Alquiler de bicis", vehiculo:"Furgonetas", guias:"Pago a guías", actividad:"Actividades", otros:"Otros"};
 const CAT_IVA = {comida:10, repostaje:21, hotel:10, super:10, peaje:21, bicis:21, vehiculo:21, guias:21, actividad:21, otros:21};
 const CAT_COL = {comida:"s-gas",repostaje:"s-hot",hotel:"s-bal",super:"s-com",peaje:"s-cli",bicis:"s-room",vehiculo:"half",guias:"paid",actividad:"s-eta",otros:"muted"};
@@ -664,7 +665,7 @@ function paintMain(el){
     clientes: `<span class="chip">${S.clientes.filter(c => !c.guia).length}</span>${S.insc && S.insc.list.some(i=>i.estado==="nueva") ? `<span class="chip due" title="Inscripciones nuevas">+${S.insc.list.filter(i=>i.estado==="nueva").length}</span>` : ""}`,
   };
   const isEx = /ejemplo/i.test(v.nombre||"");
-  const tc = {bici:"bici",trek:"trek"}[v.tipo]||"otro";
+  const tc = {bici:"bici",emtb:"bici",trek:"trek"}[v.tipo]||"otro";
   let body;
   switch(S.tab){
     case "hoy": body = viewHoy(v); break;
@@ -1522,6 +1523,26 @@ async function inscAdd(id){
   } catch(e){ writeErr(e); }
 }
 
+
+/* ===== VIAJES MODELO Y CAMBIO DE FECHAS ===== */
+async function loadPlantillas(){ if (S.plantillas) return; try { S.plantillas = await (await fetch("../plantillas/index.json", {cache:"no-store"})).json(); } catch(e){ S.plantillas = []; } }
+async function crearDesdePlantilla(vid, inicio, tpl){
+  const base = `viajes/${vid}`;
+  for (const e of (tpl.programa||[])) { const {d, ...rest} = e; await S.db.doc(`${base}/etapas/${addDays(inicio, d)}`).set({files:[], tracks:[], enlaces:"", ...rest}); }
+  for (const h of (tpl.hoteles||[])) { const {d, ...rest} = h; await S.db.collection(`${base}/hoteles`).add({telefono:"", email:"", reserva:"", plataforma:"", metodo:"", total:0, pagado:0, ...rest, fecha:addDays(inicio, d)}); }
+  for (const c of (tpl.compra||[])) await S.db.doc(`${base}/compra/${addDays(inicio, c.d)}`).set({items:c.items.map((x,i) => ({id:Date.now().toString(36)+i+Math.random().toString(36).slice(2,5), t:x.t, q:x.q||"", ok:false}))});
+}
+async function moverFechas(off){
+  if (!off) return;
+  const base = `viajes/${S.vid}`;
+  for (const [col, src] of [["etapas", S.etapas], ["compra", S.compra], ["rooming", S.rooming]]) {
+    const entries = Object.entries(src||{}).map(([k, v]) => [k, JSON.parse(JSON.stringify(v))]);
+    const nuevos = new Set(entries.map(([k]) => addDays(k, off)));
+    for (const [k, v] of entries) await S.db.doc(`${base}/${col}/${addDays(k, off)}`).set(v);
+    for (const [k] of entries) if (!nuevos.has(k)) await S.db.doc(`${base}/${col}/${k}`).delete();
+  }
+  for (const h of S.hoteles) if (h.fecha) { const {id, ...rest} = h; await S.db.doc(`${base}/hoteles/${id}`).set({...rest, fecha:addDays(h.fecha, off)}); }
+}
 /* ---------- modals ---------- */
 function openModal(html, sec){ const m = $("#modal"); m.className = "overlay " + (sec?"sec-"+sec:""); m.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`; m.hidden = false;
   if (!isAdmin() && S.modal && ["trip","hotel","client","etapa"].includes(S.modal.kind)) {
@@ -1543,7 +1564,9 @@ function tripForm(v){
     <div class="f full"><label for="nombre">Nombre del viaje</label><input id="nombre" name="nombre" required placeholder="Ej. Normandía en bici" value="${esc(v.nombre||"")}"></div>
     <div class="f"><label for="tipo">Tipo</label><select id="tipo" name="tipo">${Object.entries(TIPOS).map(([k,t])=>`<option value="${k}" ${v.tipo===k?"selected":""}>${t}</option>`).join("")}</select></div>
     <div class="f chk" style="align-self:end"><input type="checkbox" id="espana" name="espana" ${v.espana?"checked":""}><label for="espana">Viaje en España (facturas con IVA)</label></div>
+    ${!v.id && (S.plantillas||[]).length?`<div class="f full plantilla-box"><label for="plantilla">Crear desde un viaje modelo (opcional)</label><select id="plantilla" name="plantilla"><option value="">— Viaje en blanco —</option>${S.plantillas.map(t=>`<option value="${esc(t.id)}">${esc(t.nombre)} · ${t.dias} días</option>`).join("")}</select><span class="hint">Crea el programa día a día, los hoteles recomendados, las listas de picnic y los textos de la página de clientes. Pon una fecha de inicio provisional: luego puedes moverla y todo se mueve con ella.</span></div>`:""}
     ${fld("inicio","Fecha de inicio",v.inicio,"date")}${fld("fin","Fecha de fin",v.fin,"date")}
+    ${v.id && v.inicio?`<div class="f full chk"><input type="checkbox" id="mover" name="mover" checked><label for="mover">Si cambio la fecha de inicio, mover también el programa, los hoteles, las compras y el List Room a las nuevas fechas</label></div>`:""}
     <div class="f full"><label for="notas">Notas (opcional)</label><input id="notas" name="notas" value="${esc(v.notas||"")}" placeholder="Ej. Grupo de 14 + 2 guías"></div>
     ${S.teamCache && S.teamCache.some(t=>t.rol==="guia")?`<div class="f full"><label>Guías con acceso a este viaje</label><div class="pillset" style="--sec:var(--accent);--sec-bg:var(--sunk)">${S.teamCache.filter(t=>t.rol==="guia").map(t=>`<label><input type="checkbox" class="g-chk" value="${esc(t.email)}" ${(v.guias||[]).includes(t.email)?"checked":""}>${esc(t.nombre||t.email)}</label>`).join("")}</div></div>`:(window.TBX_TEAM?`<p class="hint" style="grid-column:1/-1;margin:0">Para dar acceso a guías, añádelos primero en «Equipo y accesos».</p>`:"")}
     <div class="f full"><label for="paginaClientes">Enlace a la página de clientes (opcional)</label><input id="paginaClientes" name="paginaClientes" type="text" inputmode="url" value="${esc(v.paginaClientes||"")}" placeholder="Ej. ../viajes/dolomitas-2026/ o https://..."></div>
@@ -1717,11 +1740,31 @@ async function submitForm(form){
   try {
     if (m.kind === "trip"){
       if (!fd.nombre.trim()) return toast("Pon un nombre al viaje.");
+      { const o = m.id && trip(); if (o && fd.mover && o.inicio && fd.inicio && o.inicio !== fd.inicio && o.fin && fd.fin === o.fin) fd.fin = addDays(o.fin, Math.round((parse(fd.inicio) - parse(o.inicio)) / 86400000)); }
       if (fd.inicio && fd.fin && fd.fin < fd.inicio) return toast("La fecha de fin es anterior a la de inicio.");
       const data = {nombre:fd.nombre.trim(), tipo:fd.tipo, espana:!!fd.espana, inicio:fd.inicio||"", fin:fd.fin||"", notas:fd.notas||"", paginaClientes:(fd.paginaClientes||"").trim()};
       if (S.teamCache) data.guias = [...form.querySelectorAll(".g-chk:checked")].map(x => x.value);
-      if (m.id) { await S.db.doc("viajes/"+m.id).update(data); toast("Viaje guardado"); }
-      else { data.creado = new Date().toISOString(); const ref = await S.db.collection("viajes").add(data); closeModal(); openTrip(ref.id); toast("Viaje creado"); return; }
+      if (m.id) {
+        const old = trip();
+        if (fd.mover && old && old.inicio && data.inicio && old.inicio !== data.inicio) {
+          const off = Math.round((parse(data.inicio) - parse(old.inicio)) / 86400000);
+          await moverFechas(off);
+        }
+        await S.db.doc("viajes/"+m.id).update(data); toast("Viaje guardado");
+      }
+      else {
+        data.creado = new Date().toISOString();
+        let tpl = null;
+        if (fd.plantilla) {
+          if (!data.inicio) return toast("Pon una fecha de inicio (aunque sea provisional) para crear el programa.");
+          tpl = await (await fetch(`../plantillas/${(S.plantillas.find(t=>t.id===fd.plantilla)||{}).archivo}`)).json();
+          data.fin = addDays(data.inicio, tpl.dias - 1); data.tipo = tpl.tipo || data.tipo; if (!data.notas) data.notas = tpl.notas || "";
+          if (tpl.publico) data.publico = {...tpl.publico, publicado:false};
+        }
+        const ref = await S.db.collection("viajes").add(data);
+        if (tpl) { toast("Creando el programa…"); await crearDesdePlantilla(ref.id, data.inicio, tpl); }
+        closeModal(); openTrip(ref.id); toast(tpl ? "Viaje creado con su programa y hoteles" : "Viaje creado"); return;
+      }
     } else if (m.kind === "hotel"){
       const data = {grupo:fd.grupo, fecha:fd.fecha, noches:Math.max(1,parseInt(fd.noches,10)||1), reserva:(fd.reserva||"").trim(), direccion:(fd.direccion||"").trim(), nombre:fd.nombre.trim(), ciudad:fd.ciudad, telefono:fd.telefono, email:fd.email.trim(), habitaciones:fd.habitaciones, plataforma:fd.plataforma, metodo:fd.metodo, total:+fd.total||0, pagado:+fd.pagado||0, notas:fd.notas};
       const col = S.db.collection(`viajes/${S.vid}/hoteles`);
@@ -1940,7 +1983,7 @@ document.addEventListener("click", async ev => {
     case "back": closeTrip(); S.view="trip"; try{localStorage.removeItem("tbx_vid");}catch(e){} renderAll(); break;
     case "tab": S.tab = b.dataset.t; try{localStorage.setItem("tbx_tab",S.tab);}catch(e){} renderMain(); break;
     case "day": S.day[b.dataset.k] = b.dataset.f; if (b.dataset.k==="room") S.lrMode="dia"; renderMain(); break;
-    case "newTrip": await loadTeam(); tripForm(null); break;
+    case "newTrip": await loadTeam(); await loadPlantillas(); tripForm(null); break;
     case "editTrip": await loadTeam(); tripForm(trip()); break;
     case "close": closeModal(); break;
     case "newHotel": hotelForm({fecha:b.dataset.f, grupo:b.dataset.g}); break;

@@ -1,0 +1,465 @@
+{
+ "id": "atlas-emtb-8d",
+ "nombre": "Alto Atlas en e-bike de montaña",
+ "tipo": "emtb",
+ "espana": false,
+ "dias": 8,
+ "notas": "8 días · 6 etapas en e-MTB · Marrakech (RAK) → Agafay → Ouirgane → Imlil → Asni → Ourika → Marrakech (RAK) · fechas provisionales",
+ "programa": [
+  {
+   "d": 0,
+   "tipo": "traslado",
+   "titulo": "Traslado aeropuerto de Marrakech – desierto de Agafay",
+   "hora": "15:00",
+   "salida": "Aeropuerto Marrakech-Menara (RAK)",
+   "llegada": "Desierto de Agafay",
+   "duracion": "45 min (≈ 40 km)",
+   "puntoEncuentro": "Salida de llegadas internacionales del aeropuerto Marrakech-Menara",
+   "descripcion": "15:00 h. Encuentro con el grupo en el aeropuerto de Marrakech-Menara y traslado en los vehículos privados hasta el desierto de piedra de Agafay (≈ 40 km / 45 min).\nAlojamiento: Scarabeo Camp, desierto de Agafay.\n17:30 h. Entrega de las e-bikes de montaña, prueba y ajustes (traer las medidas anotadas). Vuelta corta opcional de 8–10 km por las pistas de Agafay para hacerse a la bici con la puesta de sol sobre el Atlas.\n20:00 h. Cena en el campamento.",
+   "briefing": "11:00 h. Salida de los guías con las furgonetas hacia el aeropuerto; recoger las e-bikes en el proveedor de Marrakech y comprobar baterías, cargadores y repuestos (pastillas, cubiertas, patillas de cambio).\nConfirmar con el campamento dónde se cargan las baterías esta noche.\nCompra del picnic de la etapa 1.\nCena: confirmar menú y alergias con el campamento.",
+   "paradas": "",
+   "alertas": "Cambio de moneda: llevar dírhams desde el aeropuerto (el campamento y los pueblos no siempre aceptan tarjeta)."
+  },
+  {
+   "d": 1,
+   "tipo": "etapa",
+   "titulo": "Etapa 1 · Agafay – lago Lalla Takerkoust – Amizmiz – Ouirgane",
+   "hora": "09:00",
+   "salida": "Desierto de Agafay",
+   "llegada": "Ouirgane",
+   "km": "58",
+   "desnivel": "1150",
+   "descripcion": "Primera etapa en línea para entrar en el Atlas: pistas pedregosas del desierto de Agafay hasta la presa de Lalla Takerkoust, con el Toubkal nevado al fondo; seguimos por caminos de tierra entre olivares y aldeas bereberes hasta Amizmiz y subimos por pistas al valle del Nfis hasta Ouirgane.\n8:00 h desayuno · 9:00 h salida · 13:30 h picnic junto al lago · 17:30 h llegada a Ouirgane · 20:00 h cena en el hotel.\nAlojamiento: Domaine de la Roseraie, Ouirgane.",
+   "paradas": "Parada para té en Amizmiz.\n13:30 h picnic a la orilla del lago Lalla Takerkoust.",
+   "briefing": "Furgo 1: asistencia con el grupo (agua, baterías de repuesto, herramientas).\nFurgo 2: lleva el equipaje a Ouirgane y monta el picnic en el lago.\nCargar todas las baterías al llegar al hotel.\nCompra del picnic del día siguiente.",
+   "alertas": "Zona afectada por el terremoto de 2023 (Al Haouz): confirmar con el guía local el estado de las pistas entre Amizmiz y Ouirgane antes de salir."
+  },
+  {
+   "d": 2,
+   "tipo": "etapa",
+   "titulo": "Etapa 2 · Ouirgane – valle del Azzaden – Tizi n'Tacht – Imlil",
+   "hora": "09:00",
+   "salida": "Ouirgane",
+   "llegada": "Imlil",
+   "km": "32",
+   "desnivel": "1350",
+   "descripcion": "Etapa corta pero de mucha montaña: remontamos el valle del Azzaden entre terrazas y nogales hasta el collado de Tizi n'Tacht (≈ 2.200 m), con vistas a las gargantas del Parque Nacional del Toubkal. Bajada técnica por el bosque de Tacht hasta Imi Oughlad y llegada a Imlil, al pie del Toubkal (4.167 m).\n8:00 h desayuno · 9:00 h salida · 13:30 h almuerzo en una casa bereber · 16:30 h llegada a Imlil · 20:00 h cena en la Kasbah.\nAlojamiento: Kasbah du Toubkal, Imlil.",
+   "paradas": "13:30 h almuerzo en una casa bereber del valle del Azzaden (acordar con el guía local).",
+   "briefing": "La Kasbah du Toubkal está a 10 min a pie desde el aparcamiento de Imlil: el equipaje sube en mula (avisar a la Kasbah de la hora de llegada).\nLas bicis duermen en el local acordado en Imlil: confirmar dónde se cargan las baterías.\nCompra del picnic del día siguiente en Asni o Imlil.",
+   "alertas": "Bajada técnica y con piedra suelta desde Tizi n'Tacht: bajar el sillín y revisar frenos en el collado."
+  },
+  {
+   "d": 3,
+   "tipo": "etapa",
+   "titulo": "Etapa 3 · Imlil – Tizi n'Tamatert – valle de Imenane – Asni",
+   "hora": "09:00",
+   "salida": "Imlil",
+   "llegada": "Asni (Terres d'Amanar)",
+   "km": "36",
+   "desnivel": "800",
+   "descripcion": "Subida al collado de Tizi n'Tamatert (2.279 m), el techo del viaje en bici, entre aldeas colgadas y terrazas de cebada. Larga bajada por pistas al valle de Imenane, pasando por Imsker, hasta Asni y llegada al ecolodge de Terres d'Amanar, entre pinos y con vistas al Atlas.\n8:00 h desayuno · 9:00 h salida · 13:30 h picnic en el valle de Imenane · 16:30 h llegada · 20:00 h cena en el lodge.\nAlojamiento: Terres d'Amanar, Tahanaout.",
+   "paradas": "Parada en el collado de Tizi n'Tamatert para fotos con el Toubkal.\n13:30 h picnic en el valle de Imenane.",
+   "briefing": "Mula para bajar el equipaje de la Kasbah a primera hora (7:30 h).\nFurgo 2: equipaje a Terres d'Amanar.\nCompra del picnic del día siguiente.",
+   "alertas": "Desnivel negativo de unos 1.350 m: revisar el desgaste de pastillas de freno al final del día."
+  },
+  {
+   "d": 4,
+   "tipo": "etapa",
+   "titulo": "Etapa 4 · Terres d'Amanar – Tizi n'Tadmamt – valle del Ourika",
+   "hora": "09:00",
+   "salida": "Terres d'Amanar",
+   "llegada": "Valle del Ourika (Kasbah Bab Ourika)",
+   "km": "36",
+   "desnivel": "1020",
+   "descripcion": "Cruzamos de valle a valle por el collado de Tizi n'Tadmamt (1.800 m) entre bosques de enebros y aldeas de adobe, para bajar al valle del Ourika, el más verde del Atlas.\n8:00 h desayuno · 9:00 h salida · 13:30 h picnic en el collado · 16:00 h llegada · 20:00 h cena en el hotel.\nAlojamiento: Kasbah Bab Ourika (2 noches).",
+   "paradas": "13:30 h picnic en el collado de Tizi n'Tadmamt.",
+   "briefing": "Dos noches en la Kasbah Bab Ourika: dejar montado un punto de carga de baterías para las dos noches.\nCompra del picnic de la etapa reina (más cantidad: es el día más largo).",
+   "alertas": ""
+  },
+  {
+   "d": 5,
+   "tipo": "etapa",
+   "titulo": "Etapa 5 · Ourika – Oukaïmeden (2.600 m) – Ourika",
+   "hora": "08:30",
+   "salida": "Kasbah Bab Ourika",
+   "llegada": "Kasbah Bab Ourika",
+   "km": "62",
+   "desnivel": "1800",
+   "descripcion": "Etapa reina, circular: subida por el valle del Ourika y la carretera de Tizi n'Ouadi hasta la estación de Oukaïmeden (≈ 2.600 m), la más alta de África, entre grabados rupestres y pastos de altura. Bajada por pistas de los valles laterales (el guía local elige la ruta según el estado del terreno) y vuelta a la Kasbah.\n7:30 h desayuno · 8:30 h salida · 13:30 h almuerzo en Oukaïmeden · 17:30 h llegada · 20:00 h cena en el hotel.\nAlojamiento: Kasbah Bab Ourika.",
+   "paradas": "Avituallamiento a mitad de subida.\n13:30 h almuerzo en Oukaïmeden (picnic o restaurante).",
+   "briefing": "Furgo 1: asistencia con el grupo y baterías de repuesto cargadas para todos (con 1.800 m no llega una sola batería en modo alto).\nFurgo 2: sube al almuerzo de Oukaïmeden.\nCompra del picnic del día siguiente.",
+   "alertas": "Gestión de batería: subir en modo Eco/Tour y cambiar batería en Oukaïmeden.\nEn primavera puede quedar nieve en Oukaïmeden: llevar ropa de abrigo y cortavientos en la furgo."
+  },
+  {
+   "d": 6,
+   "tipo": "etapa",
+   "titulo": "Etapa 6 · Ourika – Tnine Ourika – palmeral de Marrakech",
+   "hora": "09:00",
+   "salida": "Kasbah Bab Ourika",
+   "llegada": "Marrakech",
+   "km": "40",
+   "desnivel": "350",
+   "descripcion": "Última etapa, tranquila y de bajada: salimos del Atlas por pistas entre huertas y olivares hasta Tnine Ourika (zoco de los lunes) y seguimos por caminos rurales hacia el palmeral de Marrakech. Último tramo en furgoneta hasta el hotel en la medina y tarde libre.\n8:00 h desayuno · 9:00 h salida · 13:00 h picnic de despedida · 15:00 h llegada al hotel · 20:30 h cena de despedida.\nAlojamiento: Les Jardins de la Médina, Marrakech.",
+   "paradas": "13:00 h picnic de despedida en el palmeral.",
+   "briefing": "Devolver las e-bikes al proveedor en Marrakech después de la etapa (revisar desperfectos con el proveedor).\nReservar la cena de despedida en la medina.\nRepasar las horas de los vuelos de vuelta para organizar los traslados.",
+   "alertas": "Tráfico en la entrada a Marrakech: el último tramo se hace en furgoneta."
+  },
+  {
+   "d": 7,
+   "tipo": "traslado",
+   "titulo": "Traslado hotel – aeropuerto de Marrakech",
+   "hora": "",
+   "salida": "Marrakech (medina)",
+   "llegada": "Aeropuerto Marrakech-Menara (RAK)",
+   "duracion": "20 min (≈ 6 km)",
+   "puntoEncuentro": "Recepción del hotel Les Jardins de la Médina",
+   "descripcion": "Desayuno y traslado al aeropuerto de Marrakech-Menara según la hora de cada vuelo (≈ 6 km / 20 min). Llegar al aeropuerto 2 h 30 min antes del vuelo.",
+   "briefing": "Organizar los traslados por grupos según las horas de los vuelos.\nRevisar la caja: tickets y facturas de todo el viaje subidos a Gastos.",
+   "paradas": "",
+   "alertas": ""
+  }
+ ],
+ "hoteles": [
+  {
+   "d": 0,
+   "noches": 1,
+   "grupo": "clientes",
+   "nombre": "Scarabeo Camp",
+   "ciudad": "Desierto de Agafay",
+   "direccion": "Desierto de Agafay, a ≈ 40 km de Marrakech",
+   "habitaciones": "Por reservar: tiendas dobles/twin + 1 twin guías",
+   "notas": "Campamento de lujo en el desierto de piedra. Media pensión. Confirmar carga de baterías de las e-bikes.\nAlternativa: Inara Camp (Agafay)."
+  },
+  {
+   "d": 1,
+   "noches": 1,
+   "grupo": "clientes",
+   "nombre": "Domaine de la Roseraie",
+   "ciudad": "Ouirgane",
+   "direccion": "Route de Taroudant, Ouirgane (Al Haouz)",
+   "habitaciones": "Por reservar: dobles/twin + 1 twin guías",
+   "notas": "Hotel con jardines y piscina en el valle del Nfis. Media pensión.\nAlternativa: Domaine Malika (Ouirgane)."
+  },
+  {
+   "d": 2,
+   "noches": 1,
+   "grupo": "clientes",
+   "nombre": "Kasbah du Toubkal",
+   "ciudad": "Imlil",
+   "direccion": "Imlil, Asni (Al Haouz)",
+   "habitaciones": "Por reservar: dobles/twin + 1 twin guías",
+   "notas": "Kasbah en lo alto de Imlil con vistas al Toubkal. Se llega a pie (10 min) y el equipaje sube en mula. Media pensión."
+  },
+  {
+   "d": 3,
+   "noches": 1,
+   "grupo": "clientes",
+   "nombre": "Terres d'Amanar",
+   "ciudad": "Tahanaout",
+   "direccion": "Douar Akli, comuna de Tahanaout (Al Haouz)",
+   "habitaciones": "Por reservar: lodges dobles/twin + 1 twin guías",
+   "notas": "Ecolodge entre pinos cerca de Asni. Media pensión."
+  },
+  {
+   "d": 4,
+   "noches": 2,
+   "grupo": "clientes",
+   "nombre": "Kasbah Bab Ourika",
+   "ciudad": "Valle del Ourika",
+   "direccion": "Entrada del valle del Ourika, Tnine Ourika (Al Haouz)",
+   "habitaciones": "Por reservar: dobles/twin + 1 twin guías",
+   "notas": "Kasbah sobre una colina a la entrada del valle, con piscina. Media pensión (2 noches)."
+  },
+  {
+   "d": 6,
+   "noches": 1,
+   "grupo": "clientes",
+   "nombre": "Les Jardins de la Médina",
+   "ciudad": "Marrakech",
+   "direccion": "21 Derb Chtouka, Kasbah, Marrakech",
+   "habitaciones": "Por reservar: dobles/twin + 1 twin guías",
+   "notas": "Riad-hotel con jardín y piscina dentro de la medina. Alojamiento y desayuno (cena de despedida fuera)."
+  }
+ ],
+ "compra": [
+  {
+   "d": 0,
+   "items": [
+    {
+     "t": "Pan (khobz)",
+     "q": "4"
+    },
+    {
+     "t": "Queso fresco y quesitos",
+     "q": "2 paquetes"
+    },
+    {
+     "t": "Atún en lata",
+     "q": "6"
+    },
+    {
+     "t": "Aceitunas",
+     "q": "1 kg"
+    },
+    {
+     "t": "Tomates y pepinos",
+     "q": "2 kg"
+    },
+    {
+     "t": "Mandarinas o plátanos",
+     "q": "2 kg"
+    },
+    {
+     "t": "Dátiles",
+     "q": "1 kg"
+    },
+    {
+     "t": "Frutos secos (almendras, nueces)",
+     "q": "1 kg"
+    },
+    {
+     "t": "Agua",
+     "q": "20 botellas de 1,5 l"
+    },
+    {
+     "t": "Galletas y chocolate",
+     "q": "3 paquetes"
+    }
+   ]
+  },
+  {
+   "d": 1,
+   "items": [
+    {
+     "t": "Pan (khobz)",
+     "q": "4"
+    },
+    {
+     "t": "Queso fresco y quesitos",
+     "q": "2 paquetes"
+    },
+    {
+     "t": "Atún en lata",
+     "q": "6"
+    },
+    {
+     "t": "Aceitunas",
+     "q": "1 kg"
+    },
+    {
+     "t": "Tomates y pepinos",
+     "q": "2 kg"
+    },
+    {
+     "t": "Mandarinas o plátanos",
+     "q": "2 kg"
+    },
+    {
+     "t": "Dátiles",
+     "q": "1 kg"
+    },
+    {
+     "t": "Frutos secos (almendras, nueces)",
+     "q": "1 kg"
+    },
+    {
+     "t": "Agua",
+     "q": "20 botellas de 1,5 l"
+    },
+    {
+     "t": "Galletas y chocolate",
+     "q": "3 paquetes"
+    }
+   ]
+  },
+  {
+   "d": 2,
+   "items": [
+    {
+     "t": "Pan (khobz)",
+     "q": "4"
+    },
+    {
+     "t": "Queso fresco y quesitos",
+     "q": "2 paquetes"
+    },
+    {
+     "t": "Atún en lata",
+     "q": "6"
+    },
+    {
+     "t": "Aceitunas",
+     "q": "1 kg"
+    },
+    {
+     "t": "Tomates y pepinos",
+     "q": "2 kg"
+    },
+    {
+     "t": "Mandarinas o plátanos",
+     "q": "2 kg"
+    },
+    {
+     "t": "Dátiles",
+     "q": "1 kg"
+    },
+    {
+     "t": "Frutos secos (almendras, nueces)",
+     "q": "1 kg"
+    },
+    {
+     "t": "Agua",
+     "q": "20 botellas de 1,5 l"
+    },
+    {
+     "t": "Galletas y chocolate",
+     "q": "3 paquetes"
+    }
+   ]
+  },
+  {
+   "d": 3,
+   "items": [
+    {
+     "t": "Pan (khobz)",
+     "q": "4"
+    },
+    {
+     "t": "Queso fresco y quesitos",
+     "q": "2 paquetes"
+    },
+    {
+     "t": "Atún en lata",
+     "q": "6"
+    },
+    {
+     "t": "Aceitunas",
+     "q": "1 kg"
+    },
+    {
+     "t": "Tomates y pepinos",
+     "q": "2 kg"
+    },
+    {
+     "t": "Mandarinas o plátanos",
+     "q": "2 kg"
+    },
+    {
+     "t": "Dátiles",
+     "q": "1 kg"
+    },
+    {
+     "t": "Frutos secos (almendras, nueces)",
+     "q": "1 kg"
+    },
+    {
+     "t": "Agua",
+     "q": "20 botellas de 1,5 l"
+    },
+    {
+     "t": "Galletas y chocolate",
+     "q": "3 paquetes"
+    }
+   ]
+  },
+  {
+   "d": 4,
+   "items": [
+    {
+     "t": "Pan (khobz)",
+     "q": "4"
+    },
+    {
+     "t": "Queso fresco y quesitos",
+     "q": "2 paquetes"
+    },
+    {
+     "t": "Atún en lata",
+     "q": "6"
+    },
+    {
+     "t": "Aceitunas",
+     "q": "1 kg"
+    },
+    {
+     "t": "Tomates y pepinos",
+     "q": "2 kg"
+    },
+    {
+     "t": "Mandarinas o plátanos",
+     "q": "2 kg"
+    },
+    {
+     "t": "Dátiles",
+     "q": "1 kg"
+    },
+    {
+     "t": "Frutos secos (almendras, nueces)",
+     "q": "1 kg"
+    },
+    {
+     "t": "Agua",
+     "q": "20 botellas de 1,5 l"
+    },
+    {
+     "t": "Galletas y chocolate",
+     "q": "3 paquetes"
+    }
+   ]
+  },
+  {
+   "d": 5,
+   "items": [
+    {
+     "t": "Pan (khobz)",
+     "q": "4"
+    },
+    {
+     "t": "Queso fresco y quesitos",
+     "q": "2 paquetes"
+    },
+    {
+     "t": "Atún en lata",
+     "q": "6"
+    },
+    {
+     "t": "Aceitunas",
+     "q": "1 kg"
+    },
+    {
+     "t": "Tomates y pepinos",
+     "q": "2 kg"
+    },
+    {
+     "t": "Mandarinas o plátanos",
+     "q": "2 kg"
+    },
+    {
+     "t": "Dátiles",
+     "q": "1 kg"
+    },
+    {
+     "t": "Frutos secos (almendras, nueces)",
+     "q": "1 kg"
+    },
+    {
+     "t": "Agua",
+     "q": "20 botellas de 1,5 l"
+    },
+    {
+     "t": "Galletas y chocolate",
+     "q": "3 paquetes"
+    }
+   ]
+  }
+ ],
+ "publico": {
+  "intro": "Seis etapas en e-bike de montaña por el Alto Atlas marroquí: del desierto de piedra de Agafay a los collados del Toubkal, las aldeas bereberes de adobe y el verde valle del Ourika, con la llegada final al palmeral de Marrakech. La asistencia eléctrica permite disfrutar de la montaña sin necesidad de ser un gran ciclista.",
+  "encuentro": "Aeropuerto Marrakech-Menara (RAK), día 1 a las 15:00 h, en la salida de llegadas internacionales.",
+  "incluye": "7 noches en hoteles, campamento y kasbahs seleccionados\nMedia pensión durante el viaje y picnics en las etapas\nE-bike de montaña de doble suspensión y casco\nGuías de Travel Bikex y guía local de montaña\nFurgonetas de asistencia y transporte de equipajes\nTraslados desde y hasta el aeropuerto de Marrakech",
+  "noincluye": "Vuelos\nBebidas\nCena de despedida en Marrakech\nPropinas\nSeguro de cancelación",
+  "llevar": "Pasaporte con al menos 6 meses de validez\nCulotte y maillots, guantes largos\nCortavientos y ropa de abrigo (por la mañana y en los collados hace frío)\nZapatillas de MTB o de montaña\nGafas de sol, crema solar y protector labial\nMochila pequeña con depósito de agua\nEnchufes tipo C/E, como en España: no hace falta adaptador",
+  "practica": "Mejor época: de marzo a mayo y de septiembre a noviembre.\nMoneda: dírham marroquí (MAD). Lleva efectivo: en los pueblos no se acepta tarjeta.\nIdioma: árabe y bereber (amazigh); en hoteles se habla francés y, a menudo, español.\nHora: Marruecos está en UTC+1 (UTC+0 durante el Ramadán): en verano va 1 hora por detrás de la España peninsular y en invierno tiene la misma hora.\nNivel: medio. Pistas de tierra y piedra con algún tramo técnico de bajada; la asistencia eléctrica ayuda en las subidas.",
+  "contacto": "Travel Bikex · teléfono de los guías durante el viaje (se enviará antes de la salida)"
+ }
+}

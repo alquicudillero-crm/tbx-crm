@@ -64,7 +64,7 @@
   ].join("");
   app.innerHTML = `
     <div class="hero"><div class="wrap">
-      <span class="kicker">${V.tipo==="trek"?"Trekking":V.tipo==="bici"?"Cicloturismo":"Viaje"}</span>
+      <span class="kicker">${V.tipo==="trek"?"Trekking":V.tipo==="emtb"?"E-bike de montaña":V.tipo==="bici"?"Cicloturismo":"Viaje"}</span>
       <h1>${esc(V.nombre)}</h1><div class="dates">${esc(V.rango)}</div>
       ${V.intro?`<p>${esc(V.intro)}</p>`:""}
       ${row.inscripcion?`<p style="margin-top:18px"><a class="btn lime" href="${formUrl}">Inscribirme en el viaje</a></p>`:""}
