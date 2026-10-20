@@ -336,6 +336,45 @@ td.r,th.r{text-align:right}
 .pos{color:var(--ok)} .neg{color:var(--due)}
 
 /* empty + modal */
+/* pendientes */
+.sec-pend{--sec:var(--due);--sec-bg:var(--due-bg)}
+.sec-hoy{--sec:#7ea538;--sec-bg:var(--ok-bg)}
+.pend-btn{border-left:5px solid var(--due)!important}
+.pend-trip{margin-bottom:14px}
+.pend-list{display:flex;flex-direction:column}
+.pend-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--line);padding:11px 16px;cursor:pointer;color:var(--ink);font:inherit}
+.pend-item:last-child{border-bottom:0}
+.pend-item:hover{background:var(--sec-bg)}
+.pend-item i{width:10px;height:10px;border-radius:50%;flex:0 0 auto;background:var(--muted)}
+.pend-item.s-alta i{background:var(--due)} .pend-item.s-media i{background:var(--half)} .pend-item.s-baja i{background:var(--s-hot)}
+.pend-item span{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.pend-item small{color:var(--muted);font-size:12.5px}
+.pend-item em{font-style:normal;color:var(--muted);font-size:13px;white-space:nowrap}
+.pend-ok{padding:12px 16px;color:var(--ok);font-weight:600;margin:0}
+/* hoy */
+.hoy-nav{display:grid;grid-template-columns:48px 1fr 48px;align-items:center;gap:10px;margin-bottom:14px;text-align:center}
+.hoy-nav b{display:block;font-size:20px;text-transform:uppercase}
+.hoy-nav span{color:var(--muted);text-transform:capitalize}
+.hoy-nav .btn{height:44px;font-size:20px;justify-content:center}
+.hoy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;align-items:start}
+.hoy-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.hoy-top{background:var(--stc,var(--ink));color:#fff;padding:14px 16px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.hoy-top.plain{background:var(--sec-bg);color:var(--ink)}
+.hoy-top h2{font-size:21px;text-transform:uppercase;margin:0}
+.hoy-top .tipo-chip{background:rgba(255,255,255,.22);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700;text-transform:uppercase}
+.hoy-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.hoy-body p{margin:0}
+.hoy-facts{display:flex;flex-wrap:wrap;gap:8px 18px}
+.hoy-facts span{display:flex;flex-direction:column}
+.hoy-facts small{color:var(--muted);font-size:12px;text-transform:uppercase}
+.hoy-facts b{font-size:18px} .hoy-facts b.bad{color:var(--due)} .hoy-facts b.good{color:var(--ok)}
+.hoy-hotel{display:flex;flex-direction:column;gap:4px;padding-bottom:10px;border-bottom:1px dashed var(--line)}
+.hoy-hotel:last-child{border-bottom:0;padding-bottom:0}
+.hoy-hotel b{font-size:17px}
+.hoy-body .acts{display:flex;flex-wrap:wrap;gap:8px}
+.hoy-bags{display:flex;flex-direction:column;gap:6px}
+.hoy-bags>div{display:flex;align-items:center;gap:10px}
+.hoy-bags>div>span:nth-child(2){flex:1;min-width:0}
 .empty{max-width:560px;margin:40px auto;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;color:var(--muted)}
 .empty h2{color:var(--ink);font-size:28px;text-transform:uppercase}
 .overlay{position:fixed;inset:0;background:rgba(10,18,14,.5);display:grid;place-items:center;z-index:50;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
@@ -405,7 +444,7 @@ const TIPOS = {bici:"Cicloturismo", trek:"Trekking", otro:"Otro"};
 const CATS = {comida:"Comidas", repostaje:"Repostajes", hotel:"Hoteles", super:"Supermercado", peaje:"Peajes y parking", bicis:"Alquiler de bicis", vehiculo:"Furgonetas", guias:"Pago a guías", actividad:"Actividades", otros:"Otros"};
 const CAT_IVA = {comida:10, repostaje:21, hotel:10, super:10, peaje:21, bicis:21, vehiculo:21, guias:21, actividad:21, otros:21};
 const CAT_COL = {comida:"s-gas",repostaje:"s-hot",hotel:"s-bal",super:"s-com",peaje:"s-cli",bicis:"s-room",vehiculo:"half",guias:"paid",actividad:"s-eta",otros:"muted"};
-const TABS = [["hoteles","Hoteles"],["etapas","Programa"],["gastos","Gastos"],["compra","Compra"],["clientes","Clientes"],["room","List Room"],["balance","Balance"]];
+const TABS = [["hoy","Hoy"],["hoteles","Hoteles"],["etapas","Programa"],["gastos","Gastos"],["compra","Compra"],["clientes","Clientes"],["room","List Room"],["balance","Balance"]];
 const pad2 = n => String(n ?? "").padStart(2,"0");
 const r2 = n => Math.round((+n||0)*100)/100;
 const slug = s => String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_|_$/g,"");
@@ -513,6 +552,7 @@ function openTrip(id, silent){
   S.view = "trip";
   if (S.vid === id) { renderAll(); return; }
   closeTrip(); S.vid = id; S.sendDay = null; S.gCat = null;
+  { const v0 = S.viajes.find(x => x.id === id); if (v0 && tripState(v0) === "live" && !isAdmin()) S.tab = "hoy"; }
   try { localStorage.setItem("tbx_vid", id); } catch(e){}
   const base = `viajes/${id}`;
   const sub = (c, fn) => S.unsubs.push(S.db.collection(base+"/"+c).onSnapshot(s => { fn(s); renderMain(); renderTabsOnly(); }, e=>console.warn(e)));
@@ -540,7 +580,7 @@ async function writeRoom(fecha, cid, patch){
 }
 
 /* ---------- render: side ---------- */
-function renderAll(){ renderSide(); renderMain(); $("#layout").classList.toggle("trip-open", !!S.vid || S.view==="general"); }
+function renderAll(){ renderSide(); renderMain(); $("#layout").classList.toggle("trip-open", !!S.vid || S.view==="general" || S.view==="pend"); }
 function renderSide(){
   const el = $("#side");
   if (!S.db){ el.innerHTML = ""; return; }
@@ -552,7 +592,9 @@ function renderSide(){
       <span>${esc(TIPOS[v.tipo]||"Viaje")} · ${esc(rangeTxt(v).split(" · ")[0])}</span>
       ${tripState(v)==="live"?' <span class="chip live">En curso</span>':""}</div></button>`;
   const block = (t, arr) => arr.length ? `<div class="label">${t}</div><div class="trip-list">${arr.map(item).join("")}</div>` : "";
+  const nPend = S.pend && !S.pend.loading ? S.pend.trips.reduce((a,t)=>a+t.items.filter(i=>i.sev==="alta").length,0) : 0;
   el.innerHTML = `
+    <button class="gen-btn pend-btn ${AO} ${S.view==="pend"?"sel":""}" data-act="pend"><div>Pendientes${nPend?` <span class="chip due">${nPend}</span>`:""}<span>Pagos, hoteles, documentos y consentimientos por resolver</span></div></button>
     <button class="gen-btn ${AO} ${S.view==="general"?"sel":""}" data-act="general"><div>Balance general<span>Cobros, gastos y beneficio de todos los viajes</span></div></button>
     <div class="side-head"><h2 style="font-size:21px;text-transform:uppercase">Viajes</h2>
       <button class="btn pri sm ${AO}" data-act="newTrip" style="--sec:#b5c036;color:#0b0b0b">+ Nuevo viaje</button></div>
@@ -577,9 +619,11 @@ function renderMain(){
 function paintMain(el){
   $("#fab-holder") && $("#fab-holder").remove();
   if (S.view === "general"){ el.className = "sec-balance"; el.innerHTML = viewGeneral(); return; }
+  if (S.view === "pend" && isAdmin()){ el.className = "sec-pend"; el.innerHTML = viewPend(); return; }
   const v = trip();
   if (!v){
     el.className = "";
+    if (isAdmin() && S.loadedTrips && S.viajes.length){ el.className = "sec-pend"; el.innerHTML = viewPend(); return; }
     el.innerHTML = `<div class="empty"><h2>Elige un viaje</h2><p>Selecciona un viaje en el menú para ver sus hoteles, etapas, gastos, lista de la compra, clientes, List Room y balance.</p><button class="btn pri ${AO}" data-act="newTrip">+ Crear un viaje</button></div>`;
     return;
   }
@@ -596,6 +640,7 @@ function paintMain(el){
   const tc = {bici:"bici",trek:"trek"}[v.tipo]||"otro";
   let body;
   switch(S.tab){
+    case "hoy": body = viewHoy(v); break;
     case "etapas": body = viewEtapas(v); break;
     case "gastos": body = viewGastos(v); break;
     case "compra": body = viewCompra(v); break;
@@ -638,7 +683,7 @@ function hotelCard(h){
 }
 function viewHoteles(v){
   const ns = noches(v);
-  const head = secTitle("Hoteles y pagos", "Hotel de clientes y hotel de guías de cada noche. En azul los que están pagados del todo; en rojo los que aún tienen algo pendiente.");
+  const head = secTitle("Hoteles y pagos", "Hotel de clientes y hotel de guías de cada noche. En azul los que están pagados del todo; en rojo los que aún tienen algo pendiente.", S.hoteles.length ? `<button class="btn" data-act="rooming">Rooming list (PDF)</button>` : "");
   if (!ns.length) return head + `<div class="empty"><p>Añade las fechas del viaje en «Editar viaje» para ver las noches.</p></div>`;
   const tot = S.hoteles.reduce((a,h)=>a+(+h.total||0),0), pag = S.hoteles.reduce((a,h)=>a+Math.min(+h.pagado||0,+h.total||0),0);
   const outside = S.hoteles.filter(h => !ns.some(f => covers(h,f)));
@@ -1067,6 +1112,200 @@ function viewGeneral(){
     <div class="legend" style="margin-top:8px"><span><i style="background:var(--ok)"></i>Cobrado</span><span><i style="background:var(--s-gas)"></i>Gastos</span></div>`;
 }
 
+/* ===== PENDIENTES (administrador) ===== */
+const daysTo = d => d ? Math.round((parse(d) - parse(todayIso)) / 86400000) : null;
+function tripWhen(v){
+  const n = daysTo(v.inicio), st = tripState(v);
+  if (st === "live") return {txt:"En curso", cls:"live"};
+  if (st === "past") return {txt:"Terminado", cls:""};
+  if (n === null) return {txt:"Sin fechas", cls:""};
+  return {txt: n === 0 ? "Empieza hoy" : n === 1 ? "Empieza mañana" : `Empieza en ${n} días`, cls: n <= 30 ? "due" : "es"};
+}
+async function loadPend(){
+  S.pend = {loading:true, trips:[]}; if (S.view==="pend" || !S.vid) renderMain();
+  const out = [];
+  const relevant = S.viajes.filter(v => !v.fin || daysTo(v.fin) >= -30);
+  for (const v of relevant){
+    try {
+      const base = `viajes/${v.id}`;
+      const [h, c, fz, e] = await Promise.all(["hoteles","clientes","finanzas","etapas"].map(x => S.db.collection(base+"/"+x).get()));
+      const hoteles = h.docs.map(d => ({id:d.id, ...d.data()}));
+      const fm = {}; fz.docs.forEach(d => fm[d.id] = d.data());
+      const cls = c.docs.map(d => ({id:d.id, ...d.data(), ...(fm[d.id]||{})})).filter(x => !x.guia);
+      const et = {}; e.docs.forEach(d => et[d.id] = d.data());
+      const n = daysTo(v.inicio), soon = n !== null && n <= 30 && tripState(v) !== "past";
+      const sev = soon || tripState(v) === "live" ? "alta" : "media";
+      const items = [];
+      hoteles.filter(x => !hotelPaid(x)).forEach(x => items.push({sev, tab:"hoteles", txt: (+x.total||0) ? `${x.nombre||"Hotel"}: falta pagar ${money(pend(x))}` : `${x.nombre||"Hotel"}: sin importe apuntado`, sub: x.fecha ? `Noche del ${fD.format(parse(x.fecha))}${x.grupo==="guias"?" · guías":""}` : ""}));
+      const ns = noches(v); const sinHotel = ns.filter(f => !hoteles.some(x => covers(x,f) && x.grupo==="clientes"));
+      if (sinHotel.length) items.push({sev, tab:"hoteles", txt:`${sinHotel.length} noche${sinHotel.length>1?"s":""} sin hotel de clientes`, sub: sinHotel.slice(0,4).map(f => fD.format(parse(f))).join(", ")});
+      cls.filter(x => (+x.precio||0) - cobradoOf(x) > 0.005).forEach(x => items.push({sev: soon && n <= 30 ? "alta" : "media", tab:"balance", txt:`${x.nombre}: le faltan ${money((+x.precio||0) - cobradoOf(x))}`, sub:"Pago del cliente"}));
+      if (cls.length && !v.consentDoc) items.push({sev:"media", tab:"clientes", txt:"Falta subir el documento de consentimiento"});
+      const noFirm = cls.filter(x => ((x.consent||{}).estado||"") !== "firmado");
+      if (noFirm.length) items.push({sev, tab:"clientes", txt:`${noFirm.length} cliente${noFirm.length>1?"s":""} sin consentimiento firmado`, sub: noFirm.slice(0,5).map(x => x.nombre).join(", ") + (noFirm.length>5?"…":"")});
+      const noMail = cls.filter(x => !(x.email||"").trim());
+      if (noMail.length) items.push({sev:"media", tab:"clientes", txt:`${noMail.length} cliente${noMail.length>1?"s":""} sin email`, sub:"Necesario para enviar el consentimiento"});
+      const noDoc = cls.filter(x => !(x.docs||[]).length);
+      if (noDoc.length) items.push({sev, tab:"clientes", txt:`${noDoc.length} cliente${noDoc.length>1?"s":""} sin documentación`, sub: noDoc.map(x => x.nombre).join(", ")});
+      const vacios = dias(v).filter(f => !dayHas(et[f]));
+      if (vacios.length) items.push({sev:"media", tab:"etapas", txt:`${vacios.length} día${vacios.length>1?"s":""} del programa sin rellenar`});
+      if (!(v.guias||[]).length && tripState(v) !== "past") items.push({sev:"baja", tab:null, act:"editTrip", txt:"Sin guías asignados al viaje"});
+      out.push({v, items});
+    } catch(err){ console.warn(err); }
+  }
+  out.sort((a,b) => String(a.v.inicio||"9").localeCompare(String(b.v.inicio||"9")));
+  S.pend = {loading:false, trips:out, at:new Date()};
+  renderSide(); if (S.view==="pend" || !S.vid) renderMain();
+}
+function viewPend(){
+  if (!S.pend) { setTimeout(loadPend, 0); return `<div class="empty"><p>Revisando todos los viajes…</p></div>`; }
+  const P = S.pend;
+  const all = P.trips.flatMap(t => t.items);
+  const alta = all.filter(i => i.sev==="alta").length, media = all.filter(i => i.sev==="media").length;
+  const order = {alta:0, media:1, baja:2};
+  return `<button class="btn ghost sm only-mobile" data-act="back" style="margin-bottom:8px">← Todos los viajes</button>
+    ${secTitle("Pendientes", "Lo que necesita tu atención en los viajes próximos y en curso: pagos, hoteles, documentación, consentimientos y programa.", `<button class="btn" data-act="reloadPend">${P.loading?"Revisando…":"Actualizar"}</button>`)}
+    <div class="tiles">
+      <div class="tile" style="--tc:${alta?"var(--due)":"var(--ok)"}"><span class="label">Urgentes</span><span class="v">${alta}</span><small>viajes en menos de 30 días o en curso</small></div>
+      <div class="tile" style="--tc:var(--half)"><span class="label">Por revisar</span><span class="v">${media}</span></div>
+      <div class="tile" style="--tc:var(--s-cli)"><span class="label">Viajes revisados</span><span class="v">${P.trips.length}</span></div>
+    </div>
+    ${P.loading && !P.trips.length ? '<p class="hint">Revisando…</p>' : P.trips.map(({v, items}) => { const w = tripWhen(v); return `<div class="panel pend-trip">
+      <div class="panel-head"><div><h3>${esc(v.nombre)}</h3><span class="hint">${esc(rangeTxt(v))}</span></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip ${w.cls}">${esc(w.txt)}</span><button class="btn sm" data-act="open" data-id="${esc(v.id)}">Abrir viaje</button></div></div>
+      ${items.length ? `<div class="pend-list">${items.sort((a,b) => order[a.sev]-order[b.sev]).map(i => `<button class="pend-item s-${i.sev}" ${i.act?`data-act="gotoAct" data-a="${i.act}"`:`data-act="goto" data-t="${i.tab}"`} data-id="${esc(v.id)}"><i></i><span><b>${esc(i.txt)}</b>${i.sub?`<small>${esc(i.sub)}</small>`:""}</span><em>Ver →</em></button>`).join("")}</div>`
+        : '<p class="pend-ok">Todo en orden en este viaje.</p>'}
+    </div>`; }).join("") || '<div class="empty"><p>No hay viajes próximos ni en curso.</p></div>'}`;
+}
+
+/* ===== HOY (modo ruta para guías) ===== */
+function viewHoy(v){
+  const ds = dias(v);
+  if (!ds.length) return secTitle("Hoy", "Vista rápida del día.") + `<div class="empty"><p>Añade las fechas del viaje.</p></div>`;
+  const f = pickDay("hoy", ds), i = ds.indexOf(f), prev = ds[i-1], next = ds[i+1];
+  const e = S.etapas[f] || {}, tipo = tipoDia(e), T = TIPO_DIA[tipo];
+  const ns = noches(v), isNight = ns.includes(f);
+  const hc = S.hoteles.find(h => covers(h,f) && h.grupo==="clientes"), hg = S.hoteles.find(h => covers(h,f) && h.grupo==="guias");
+  const maps = h => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([h.nombre, h.direccion||h.ciudad].filter(Boolean).join(", "))}`;
+  const hotelCardHoy = (h, lbl) => h ? `<div class="hoy-hotel"><span class="label">${lbl}</span><b>${esc(h.nombre)}</b>
+      ${h.direccion||h.ciudad?`<span class="hint">${esc(h.direccion||h.ciudad)}</span>`:""}
+      <div class="acts">${h.telefono?`<a class="btn sm" href="tel:${esc(String(h.telefono).replace(/[^+0-9]/g,""))}">Llamar · ${esc(h.telefono)}</a>`:""}<a class="btn sm" href="${esc(maps(h))}" target="_blank" rel="noopener">Cómo llegar ↗</a></div>
+      ${h.habitaciones?`<span class="hint" style="white-space:pre-wrap">${esc(h.habitaciones)}</span>`:""}${h.notas?`<span class="hint" style="white-space:pre-wrap">${esc(h.notas)}</span>`:""}</div>` : "";
+  const gs = tagGroups(), s = isNight ? dayStats(f, gs) : null;
+  const faltE = isNight ? gs.filter(g => !roomOfG(f,g).ent) : [], faltR = isNight ? gs.filter(g => !roomOfG(f,g).rec) : [];
+  const shop = next ? (((S.compra[next]||{}).items)||[]) : [];
+  const ruta = [e.salida, e.llegada].filter(Boolean).join(" → ");
+  return `<div class="hoy-nav">
+      ${prev?`<button class="btn" data-act="day" data-k="hoy" data-f="${prev}" aria-label="Día anterior">←</button>`:'<span></span>'}
+      <div><b>${f===todayIso?"Hoy · ":""}Día ${i+1}</b><span>${esc(fLong.format(parse(f)))}</span></div>
+      ${next?`<button class="btn" data-act="day" data-k="hoy" data-f="${next}" aria-label="Día siguiente">→</button>`:'<span></span>'}
+    </div>
+    <div class="hoy-grid">
+      <div class="hoy-card" style="--stc:${T.col}"><div class="hoy-top"><span class="tipo-chip">${esc(dayHas(e) ? dayTag(ds,f) : T.lbl)}</span><h2>${esc(cleanTitle(e.titulo) || "Sin información del día")}</h2></div>
+        <div class="hoy-body">
+          <div class="hoy-facts">${e.hora?`<span><small>${tipo==="traslado"?"Encuentro":"Salida"}</small><b>${esc(e.hora)}</b></span>`:""}${ruta?`<span><small>Ruta</small><b>${esc(ruta)}</b></span>`:""}
+            ${tipo==="etapa"&&e.km?`<span><small>Distancia</small><b>${esc(e.km)} km</b></span>`:""}${tipo==="etapa"&&e.desnivel?`<span><small>Desnivel</small><b>${esc(e.desnivel)} m</b></span>`:""}
+            ${tipo==="traslado"&&e.puntoEncuentro?`<span><small>Punto de encuentro</small><b>${esc(e.puntoEncuentro)}</b></span>`:""}</div>
+          ${e.descripcion?`<p style="white-space:pre-wrap">${esc(e.descripcion)}</p>`:""}
+          ${e.alertas?`<div class="alert"><b>Avisos</b><p>${esc(e.alertas)}</p></div>`:""}
+          ${e.paradas?`<p><small class="label">Paradas y picnic</small><br>${esc(e.paradas)}</p>`:""}
+          ${e.propuestas?`<p><small class="label">Propuestas</small><br>${esc(e.propuestas)}</p>`:""}
+          ${e.briefing?`<p><small class="label">Notas</small><br>${esc(e.briefing)}</p>`:""}
+          <div class="acts">${(e.tracks||[]).length?`<button class="btn sm pri" style="--sec:var(--s-eta)" data-act="dlTracks" data-f="${f}">Descargar track${(e.tracks||[]).length>1?"s":""}</button>`:""}<button class="btn sm" data-act="gotoDay" data-f="${f}">Ver el día completo</button></div>
+        </div></div>
+      <div class="hoy-card"><div class="hoy-top plain"><h2>Esta noche</h2></div><div class="hoy-body">
+        ${hotelCardHoy(hc, "Hotel de clientes") || '<p class="hint">Sin hotel de clientes esta noche.</p>'}${hotelCardHoy(hg, "Hotel de guías")}</div></div>
+      ${isNight ? `<div class="hoy-card"><div class="hoy-top plain"><h2>Maletas</h2></div><div class="hoy-body">
+        <div class="hoy-facts"><span><small>Entregadas</small><b class="${s.ent<s.n?"bad":"good"}">${s.ent}/${s.n}</b></span><span><small>Recogidas</small><b class="${s.rec<s.n?"bad":"good"}">${s.rec}/${s.n}</b></span><span><small>Maletas</small><b>${s.mT}</b></span></div>
+        ${faltE.length ? `<small class="label">Faltan por entregar</small><div class="hoy-bags">${faltE.map(g => `<div><span class="tagno">${esc(pad2(g.num))}</span><span>${esc(gShort(g))}${roomOfG(f,g).hab?` · hab. ${esc(roomOfG(f,g).hab)}`:""}</span><button class="btn sm" data-act="tg" data-g="${esc(g.key)}" data-f="${f}" data-k="ent">Entregada</button></div>`).join("")}</div>` : '<p class="pend-ok">Todas entregadas.</p>'}
+        ${faltR.length && !faltE.length ? `<small class="label">Faltan por recoger (mañana)</small><div class="hoy-bags">${faltR.map(g => `<div><span class="tagno">${esc(pad2(g.num))}</span><span>${esc(gShort(g))}</span><button class="btn sm" data-act="tg" data-g="${esc(g.key)}" data-f="${f}" data-k="rec">Recogida</button></div>`).join("")}</div>` : ""}
+        <div class="acts"><button class="btn sm" data-act="gotoTab" data-t="room">Abrir List Room</button></div></div></div>` : ""}
+      ${next ? `<div class="hoy-card"><div class="hoy-top plain"><h2>Compra para mañana</h2></div><div class="hoy-body">
+        ${shop.length ? `<div class="shop">${shop.map(x => `<div class="item ${x.ok?"done":""}"><button class="ck" data-act="shopTg" data-f="${next}" data-i="${esc(x.id)}" aria-label="Marcar">${x.ok?"✓":""}</button><span class="t">${esc(x.t)}</span>${x.q?`<span class="q">${esc(x.q)}</span>`:""}</div>`).join("")}</div>` : '<p class="hint">No hay lista de la compra para mañana.</p>'}
+        <div class="acts"><button class="btn sm" data-act="gotoShop" data-f="${next}">Editar la lista</button><button class="btn sm" data-act="newGasto">+ Apuntar un ticket</button></div></div></div>` : ""}
+    </div>`;
+}
+
+/* ===== ROOMING LIST EN PDF ===== */
+const HAB_TIPOS = ["Doble","Twin","Individual","DUI","Triple","Junior suite"];
+function tipoHabOf(c){
+  if (c.tipoHab) return c.tipoHab;
+  const m = /Hab\.?\s*(Doble|Twin|Individual|Single|Triple|DUI|Junior suite)/i.exec(c.notas||"");
+  if (!m) return "";
+  const t = m[1].toLowerCase(); return t==="single" ? "Individual" : HAB_TIPOS.find(x => x.toLowerCase()===t) || m[1];
+}
+function roomingForm(){
+  const v = trip(); const stays = [...S.hoteles].filter(h => h.fecha).sort((a,b) => (a.fecha+a.grupo).localeCompare(b.fecha+b.grupo));
+  if (!stays.length) return toast("Primero añade los hoteles del viaje.");
+  S.modal = {kind:"rooming"};
+  openModal(hdr("Rooming list para el hotel") + `<form id="frm">
+    <div class="f full"><label for="rl-hotel">Hotel</label><select id="rl-hotel">${stays.map(h => `<option value="${esc(h.id)}" ${h===stays.find(x=>x.grupo==="clientes")?"selected":""}>${esc(fD.format(parse(h.fecha)))} · ${esc(h.nombre||"Hotel")} (${h.grupo==="guias"?"guías":"clientes"}, ${nNoches(h)} noche${nNoches(h)>1?"s":""})</option>`).join("")}</select></div>
+    <div class="f full chk"><input type="checkbox" id="rl-guias"><label for="rl-guias">Incluir a los guías (si duermen en este hotel)</label></div>
+    <div class="f full chk"><input type="checkbox" id="rl-docs" checked><label for="rl-docs">Añadir detrás la documentación (pasaportes) de los huéspedes</label></div>
+    <p class="hint" style="grid-column:1/-1;margin:0">El tipo de habitación sale de la ficha de cada cliente («Tipo de habitación») y el número de habitación, del List Room de la primera noche si ya lo has apuntado.</p>
+    <footer><button type="button" class="btn" data-act="close">Cancelar</button><button class="btn pri" type="submit">Descargar PDF</button></footer>
+  </form>`, "room");
+}
+async function roomingPdf(hotelId, withGuides, withDocs){
+  if (!window.PDFLib) return toast("No se pudo cargar el generador de PDF. Recarga la página.");
+  const v = trip(), h = S.hoteles.find(x => x.id === hotelId); if (!h) return;
+  const {PDFDocument, rgb, StandardFonts} = PDFLib;
+  const W = 595.28, H = 841.89, M = 42;
+  const pdf = await PDFDocument.create();
+  const fR = await pdf.embedFont(StandardFonts.Helvetica), fB = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const clean = t => String(t ?? "").replace(/[→]/g,"-").replace(/[^\x20-\x7E -ÿ€–—‘’“”•…]/g, "");
+  const ink = rgb(.08,.08,.08), mut = rgb(.38,.4,.36), lime = rgb(.494,.647,.22);
+  let page = pdf.addPage([W,H]), y = H - M;
+  const text = (t, x, yy, size=10, font=fR, color=ink) => page.drawText(clean(t), {x, y:yy, size, font, color});
+  const fit = (t, font, size, max) => { t = clean(t); while (t && font.widthOfTextAtSize(t, size) > max) t = t.slice(0,-2) + "…"; return t; };
+  // header
+  page.drawRectangle({x:0, y:H-8, width:W, height:8, color:lime});
+  text("TRAVEL BIKEX", M, y-6, 11, fB, lime); text("ROOMING LIST", W-M-fB.widthOfTextAtSize("ROOMING LIST",11), y-6, 11, fB, ink);
+  y -= 34; text(fit(h.nombre||"Hotel", fB, 20, W-2*M), M, y, 20, fB); y -= 16;
+  if (h.direccion||h.ciudad) { text(fit(h.direccion||h.ciudad, fR, 10, W-2*M), M, y, 10, fR, mut); y -= 14; }
+  const ci = parse(h.fecha), co = parse(addDays(h.fecha, nNoches(h)));
+  const ff = new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"2-digit",year:"numeric"});
+  y -= 6;
+  [["Grupo", `TRAVEL BIKEX - ${v.nombre}`], ["Llegada", ff.format(ci)], ["Salida", `${ff.format(co)}  (${nNoches(h)} noche${nNoches(h)>1?"s":""})`], h.reserva ? ["Reserva", h.reserva] : null].filter(Boolean).forEach(([k,val]) => {
+    text(k.toUpperCase(), M, y, 8, fB, mut); text(fit(val, fR, 11, W-2*M-80), M+80, y, 11); y -= 16; });
+  // rows
+  const groups = tagGroups().map(g => ({num:g.num, members:g.members, key:g.key}));
+  if (withGuides) { const gm = new Map(); sortedClients().filter(c => c.guia).forEach(c => { const k = "g"+(c.num||c.id); if (!gm.has(k)) gm.set(k, {num:c.num, members:[], key:k, guia:true}); gm.get(k).members.push(c); }); groups.push(...gm.values()); }
+  const first = h.fecha;
+  const rows = groups.map(g => ({num: g.guia ? "Guías" : pad2(g.num), hab: roomOfG(first, g).hab || "", tipo: tipoHabOf(g.members[0]) || (g.members.length>1?"Doble/Twin":"Individual"), names: g.members.map(m => m.nombre)}));
+  y -= 10;
+  const cols = [{t:"Nº", w:44}, {t:"Hab.", w:56}, {t:"Tipo", w:92}, {t:"Huéspedes", w:W-2*M-44-56-92}];
+  const headRow = () => { page.drawRectangle({x:M, y:y-6, width:W-2*M, height:20, color:rgb(.08,.08,.08)}); let x = M+6; cols.forEach(c => { text(c.t.toUpperCase(), x, y, 8.5, fB, rgb(1,1,1)); x += c.w; }); y -= 22; };
+  headRow();
+  rows.forEach((r, idx) => {
+    const lh = 14, hgt = Math.max(1, r.names.length) * lh + 8;
+    if (y - hgt < M + 40) { page = pdf.addPage([W,H]); y = H - M; headRow(); }
+    if (idx % 2 === 0) page.drawRectangle({x:M, y:y-hgt+lh-2, width:W-2*M, height:hgt, color:rgb(.95,.96,.93)});
+    let x = M+6;
+    text(r.num, x, y, 10, fB); x += cols[0].w; text(r.hab || "—", x, y, 10, r.hab?fB:fR, r.hab?ink:mut); x += cols[1].w; text(fit(r.tipo, fR, 10, cols[2].w-8), x, y, 10); x += cols[2].w;
+    r.names.forEach((n, k) => text(fit(n, fR, 10.5, cols[3].w-8), x, y - k*lh, 10.5));
+    y -= hgt;
+  });
+  y -= 10;
+  const cnt = {}; rows.forEach(r => cnt[r.tipo] = (cnt[r.tipo]||0)+1);
+  const persons = rows.reduce((a,r) => a + r.names.length, 0);
+  text(`Total: ${rows.length} habitaciones · ${persons} personas · ` + Object.entries(cnt).map(([k,n]) => `${n} ${k.toLowerCase()}`).join(", "), M, y, 10, fB);
+  y -= 26; text("TRAVEL BIKEX · TBX Eventos y Actividades Deportivas S.L.U. · Cercedilla (Madrid)", M, Math.max(y, M), 8, fR, mut);
+  // passports
+  let skipped = [];
+  if (withDocs) {
+    const people = groups.flatMap(g => g.members);
+    for (const c of people) for (const d of (c.docs||[])) {
+      try {
+        const buf = await (await fetch("/_blob/" + d.id)).arrayBuffer();
+        if (/pdf/.test(d.tipo)) { const src = await PDFDocument.load(buf, {ignoreEncryption:true}); (await pdf.copyPages(src, src.getPageIndices())).forEach(p => pdf.addPage(p)); }
+        else { const img = /png/.test(d.tipo) ? await pdf.embedPng(buf) : await pdf.embedJpg(buf); const pg = pdf.addPage([W,H]); const sc = Math.min(535/img.width, 760/img.height, 1);
+          pg.drawImage(img, {x:(W-img.width*sc)/2, y:(800-img.height*sc)/2+10, width:img.width*sc, height:img.height*sc}); pg.drawText(clean(`${pad2(c.num)} - ${c.nombre}`), {x:30, y:815, size:12, font:fB, color:ink}); }
+      } catch(err){ console.warn(err); skipped.push(c.nombre); }
+    }
+  }
+  await saveFile(`Rooming_${slug(h.nombre||"hotel")}_${h.fecha}.pdf`, new Blob([await pdf.save()]), skipped.length ? `Rooming list lista. Sin documentación legible de: ${skipped.join(", ")}` : "Rooming list descargada");
+}
+
 /* ---------- modals ---------- */
 function openModal(html, sec){ const m = $("#modal"); m.className = "overlay " + (sec?"sec-"+sec:""); m.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`; m.hidden = false;
   if (!isAdmin() && S.modal && ["trip","hotel","client","etapa"].includes(S.modal.kind)) {
@@ -1221,6 +1460,7 @@ function clientForm(c){
     ${fld("telefono","Teléfono",c.telefono,"tel")}${fld("email","Email",c.email,"email")}
     ${isAdmin()?fld("precio","Precio del viaje (€)",c.precio,"number"):""}
     <div class="f"><label>Pagado</label><div style="padding:8px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">${c.id?`${payChip(c)}<button type="button" class="btn sm" data-act="pagos" data-id="${esc(c.id)}">Pagos</button>`:'<span class="hint">Guarda el cliente y luego añade sus pagos.</span>'}</div></div>
+    <div class="f"><label for="tipoHab">Tipo de habitación</label><select id="tipoHab" name="tipoHab"><option value="">Sin indicar</option>${HAB_TIPOS.map(t => `<option ${tipoHabOf(c)===t?"selected":""}>${t}</option>`).join("")}</select></div>
     <div class="f full"><label for="notas">Notas</label><input id="notas" name="notas" value="${esc(c.notas||"")}" placeholder="Ej. Alergia al gluten, bici eléctrica talla M"></div>
     <div class="f full chk"><input type="checkbox" id="guia" name="guia" ${c.guia?"checked":""}><label for="guia">Es guía de Travel Bikex (solo para su documentación: no cuenta en List Room ni en Balance)</label></div>
     <footer>${c.id?delBtn("client","Borrar cliente"):""}<button type="button" class="btn" data-act="close">Cancelar</button><button class="btn pri" type="submit">Guardar</button></footer>
@@ -1274,12 +1514,16 @@ async function submitForm(form){
     } else if (m.kind === "client"){
       if (!fd.nombre.trim()) return toast("Escribe el nombre del cliente.");
       const num = parseInt(fd.num,10)||0;
-      const data = {num, nombre:fd.nombre.trim(), maletas:parseInt(fd.maletas,10)||0, telefono:fd.telefono, email:fd.email, notas:fd.notas, guia:!!fd.guia};
+      const data = {num, nombre:fd.nombre.trim(), maletas:parseInt(fd.maletas,10)||0, telefono:fd.telefono, email:fd.email, notas:fd.notas, guia:!!fd.guia, tipoHab:fd.tipoHab||""};
       const col = S.db.collection(`viajes/${S.vid}/clientes`);
       let cid = m.id;
       if (m.id) await col.doc(m.id).update(data); else cid = (await col.add({...data, docs:[]})).id;
       await mutateDoc(finPath(cid), cur => ({...cur, precio:+fd.precio||0}));
       toast("Cliente guardado");
+    } else if (m.kind === "rooming"){
+      const btn = form.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = "Preparando…";
+      try { await roomingPdf(val("rl-hotel"), $("#rl-guias").checked, $("#rl-docs").checked); } finally { btn.disabled = false; btn.textContent = "Descargar PDF"; }
+      return;
     } else if (m.kind === "pagos"){
       const importe = r2(val("p-importe")); if (!(importe > 0)) return toast("Escribe el importe del pago.");
       const pago = {id:Date.now().toString(36)+Math.random().toString(36).slice(2,5), fecha:val("p-fecha"), importe, metodo:val("p-metodo").trim(), nota:val("p-nota").trim()};
@@ -1432,7 +1676,7 @@ document.addEventListener("click", async ev => {
   if (!b) { if (ev.target.id==="modal") closeModal(); return; }
   const a = b.dataset.act;
   if (a!=="del" && a!=="delFile" && a!=="delPago" && a!=="teamDel" && S.armed && !String(S.armed).startsWith("doc")) S.armed = null;
-  const ADMIN_ACTS = ["newTrip","editTrip","general","reloadGen","genYear","newHotel","newClient","editEtapa","upload","delFile","cFirm","cUndo","cMarkSent","pagos","delPago","team","teamDel"];
+  const ADMIN_ACTS = ["pend","reloadPend","newTrip","editTrip","general","reloadGen","genYear","newHotel","newClient","editEtapa","upload","delFile","cFirm","cUndo","cMarkSent","pagos","delPago","team","teamDel"];
   if (!isAdmin() && (ADMIN_ACTS.includes(a) || (a==="del" && b.dataset.kind!=="gasto"))) { toast("Esto solo lo puede hacer el administrador."); return; }
   switch(a){
     case "team": await loadTeam(); teamForm(); break;
@@ -1441,6 +1685,14 @@ document.addEventListener("click", async ev => {
     case "open": openTrip(b.dataset.id); break;
     case "general": closeTrip(); S.view="general"; S.general=null; renderAll(); window.scrollTo(0,0); break;
     case "reloadGen": loadGeneral(); break;
+    case "pend": closeTrip(); S.view="pend"; S.pend=null; try{localStorage.removeItem("tbx_vid");}catch(e){} renderAll(); window.scrollTo(0,0); break;
+    case "reloadPend": loadPend(); break;
+    case "goto": openTrip(b.dataset.id); S.tab = b.dataset.t; renderMain(); window.scrollTo(0,0); break;
+    case "gotoAct": openTrip(b.dataset.id); if (b.dataset.a==="editTrip") { await loadTeam(); tripForm(trip()); } break;
+    case "gotoTab": S.tab = b.dataset.t; renderMain(); window.scrollTo(0,0); break;
+    case "gotoDay": S.day.eta = b.dataset.f; S.tab = "etapas"; renderMain(); window.scrollTo(0,0); break;
+    case "gotoShop": S.day.com = b.dataset.f; S.tab = "compra"; renderMain(); window.scrollTo(0,0); break;
+    case "rooming": roomingForm(); break;
     case "genYear": S.genYear = b.dataset.y || null; renderMain(); break;
     case "back": closeTrip(); S.view="trip"; try{localStorage.removeItem("tbx_vid");}catch(e){} renderAll(); break;
     case "tab": S.tab = b.dataset.t; try{localStorage.setItem("tbx_tab",S.tab);}catch(e){} renderMain(); break;
