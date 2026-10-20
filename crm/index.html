@@ -687,6 +687,7 @@ function paintMain(el){
         <span>${esc(rangeTxt(v))}</span>${tripState(v)==="live"?'<span class="chip live">En curso</span>':""}
         ${v.notas?`<span>· ${esc(v.notas)}</span>`:""}</div></div>
       <div class="actions">${v.paginaClientes?`<a class="btn pri" style="--sec:var(--s-eta)" href="${esc(v.paginaClientes)}" target="_blank" rel="noopener">Página de clientes ↗</a>`:`<button class="btn ${AO}" data-act="editTrip" title="Añade el enlace a la página de clientes">+ Página de clientes</button>`}<button class="btn ${AO}" data-act="publico">${pubLive(v)?"Página online":"Publicar página"}</button><button class="btn ${AO}" data-act="editTrip">Editar viaje</button></div></div>
+    ${fueraBanner(v)}
     ${isAdmin() && (v.guias||[]).length?`<div class="trip-meta" style="margin:-6px 0 12px"><span class="label">Guías con acceso</span>${(v.guias||[]).map(g=>`<span class="chip">${esc(teamName(g))}</span>`).join("")}</div>`:""}
     <nav class="tabs" role="tablist">${TABS.filter(([k]) => (isAdmin() || k !== "balance") && (k !== "bicis" || v.tipo !== "trek")).map(([k,t]) => `<button class="tab sec-${k} ${S.tab===k?"on":""}" data-act="tab" data-t="${k}"><i class="dot"></i>${t}${badge[k]||""}</button>`).join("")}</nav>
     ${body}`;
@@ -1337,8 +1338,8 @@ async function roomingPdf(hotelId, withGuides, withDocs){
 }
 
 /* ===== BICIS DE ALQUILER ===== */
-const BICI_TIPOS = ["Carretera","E-bike carretera","Gravel","E-gravel","MTB","E-MTB","Trekking / híbrida"];
-const PEDALES = ["Planos","SPD (MTB)","SPD-SL (Shimano carretera)","Look Keo","Trae los suyos"];
+const BICI_TIPOS = ["E-bike doble suspensión","E-bike suspensión delantera","MTB","Road bike"];
+const PEDALES = ["SPD","Planos"];
 const biciOf = c => (S.bicis||{})[c.id] || {};
 const biciPath = cid => `viajes/${S.vid}/bicis/${cid}`;
 function viewBicis(v){
@@ -1350,20 +1351,20 @@ function viewBicis(v){
   const ent = con.filter(c => biciOf(c).ent).length, dev = con.filter(c => biciOf(c).dev).length;
   const resumen = {}; con.forEach(c => { const b = biciOf(c); const k = `${b.tipo||"Sin tipo"}|${b.talla||"Sin talla"}`; resumen[k] = (resumen[k]||0)+1; });
   const faltan = con.filter(c => !biciOf(c).talla && !biciOf(c).altura);
-  const card = c => { const b = biciOf(c); const med = [b.altura?`${b.altura} cm altura`:"", b.entrepierna?`${b.entrepierna} cm entrepierna`:"", b.peso?`${b.peso} kg`:""].filter(Boolean).join(" · ");
+  const card = c => { const b = biciOf(c); const med = b.altura?`${b.altura} cm de estatura`:"";
     return `<div class="bici-card ${b.alquila?"":"off"} ${b.alquila&&b.dev?"dev":b.alquila&&b.ent?"ent":""}">
       <div class="bici-top"><span class="tagno">${c.guia?"G":esc(pad2(c.num))}</span><div><b>${esc(c.nombre)}</b>${c.guia?' <span class="chip trek">Guía</span>':""}
-        <span class="hint">${b.alquila ? esc([b.tipo, b.talla?`talla ${b.talla}`:"", b.modelo].filter(Boolean).join(" · ") || "Bici de alquiler sin detallar") : b.propia ? "Trae su bici" : "Sin bici de alquiler"}</span></div>
+        <span class="hint">${b.alquila ? esc([b.tipo, b.talla?`talla ${b.talla}`:""].filter(Boolean).join(" · ") || "Bici de alquiler sin detallar") : b.propia ? "Trae su bici" : "Sin bici de alquiler"}</span></div>
         <button class="btn ghost sm" data-act="editBici" data-id="${esc(c.id)}">Editar</button></div>
-      ${b.alquila ? `<div class="bici-meta">${med?`<span>${esc(med)}</span>`:'<span class="due-txt">Faltan medidas</span>'}${b.pedales?`<span>Pedales: ${esc(b.pedales)}</span>`:""}${b.numero?`<span>Bici nº <b>${esc(b.numero)}</b></span>`:""}${b.proveedor?`<span>${esc(b.proveedor)}</span>`:""}</div>
-        ${b.notas?`<div class="hint">${esc(b.notas)}</div>`:""}
+      ${b.alquila ? `<div class="bici-meta">${med?`<span>${esc(med)}</span>`:'<span class="due-txt">Falta la estatura</span>'}${b.pedales?`<span>Pedales: ${esc(b.pedales)}</span>`:""}${b.casco?`<span>Casco: <b>${esc(b.casco)}</b></span>`:""}</div>
+        ${b.notas?`<div class="hint">Petición especial: ${esc(b.notas)}</div>`:""}
         <div class="tgs"><button class="tg ${b.ent?"on":""}" data-act="biciTg" data-id="${esc(c.id)}" data-k="ent">${b.ent?"✓ ":""}Entregada</button><button class="tg ${b.dev?"on":""}" data-act="biciTg" data-id="${esc(c.id)}" data-k="dev">${b.dev?"✓ ":""}Devuelta</button></div>` : ""}
     </div>`; };
   return head + `<div class="tiles">
       <div class="tile" style="--tc:var(--s-bic)"><span class="label">Con bici de alquiler</span><span class="v">${con.length} / ${cs.length}</span></div>
       <div class="tile" style="--tc:${ent<con.length?"var(--due)":"var(--ok)"}"><span class="label">Entregadas</span><span class="v">${ent} / ${con.length}</span></div>
       <div class="tile" style="--tc:${dev<con.length?"var(--half)":"var(--ok)"}"><span class="label">Devueltas</span><span class="v">${dev} / ${con.length}</span></div>
-      <div class="tile" style="--tc:${faltan.length?"var(--due)":"var(--ok)"}"><span class="label">Sin talla ni medidas</span><span class="v">${faltan.length}</span>${faltan.length?`<small>${esc(faltan.map(c=>c.nombre.split(" ")[0]).join(", "))}</small>`:""}</div>
+      <div class="tile" style="--tc:${faltan.length?"var(--due)":"var(--ok)"}"><span class="label">Sin talla ni estatura</span><span class="v">${faltan.length}</span>${faltan.length?`<small>${esc(faltan.map(c=>c.nombre.split(" ")[0]).join(", "))}</small>`:""}</div>
     </div>
     ${Object.keys(resumen).length ? `<div class="panel" style="margin-bottom:14px"><div class="panel-head"><h3>Pedido al proveedor</h3></div><div class="bici-res">${Object.entries(resumen).sort().map(([k,n]) => { const [t,s] = k.split("|"); return `<div><b>${n}</b><span>${esc(t)}</span><small>${esc(s)}</small></div>`; }).join("")}</div></div>` : ""}
     <div class="bici-grid">${cs.map(card).join("")}</div>`;
@@ -1378,17 +1379,15 @@ function biciForm(cid){
       <label><input type="radio" name="modo" value="propia" ${!b.alquila&&b.propia?"checked":""}><span>Trae la suya</span></label>
       <label><input type="radio" name="modo" value="" ${!b.alquila&&!b.propia?"checked":""}><span>Sin indicar</span></label></div></div>
     ${sel("b-tipo","Tipo de bici",BICI_TIPOS,b.tipo)}${fld("b-talla","Talla",b.talla)}
-    ${fld("b-altura","Altura (cm)",b.altura,"number")}${fld("b-entrepierna","Entrepierna (cm)",b.entrepierna,"number")}
-    ${fld("b-peso","Peso (kg, para e-bikes)",b.peso,"number")}${sel("b-pedales","Pedales",PEDALES,b.pedales)}
-    ${fld("b-modelo","Modelo",b.modelo)}${fld("b-proveedor","Proveedor",b.proveedor)}
-    ${fld("b-numero","Nº de bici / cuadro",b.numero)}
-    <div class="f full"><label for="b-notas">Notas</label><input id="b-notas" name="b-notas" value="${esc(b.notas||"")}" placeholder="Sillín, portabultos, GPS, casco…"></div>
+    ${fld("b-altura","Estatura (cm)",b.altura,"number")}${sel("b-pedales","Pedales",PEDALES,b.pedales)}
+    ${sel("b-casco","¿Quiere casco?",["Sí","No"],b.casco)}
+    <div class="f full"><label for="b-notas">Petición especial</label><input id="b-notas" name="b-notas" value="${esc(b.notas||"")}" placeholder="Cualquier petición especial"></div>
     <footer><button type="button" class="btn" data-act="close">Cancelar</button><button class="btn pri" type="submit">Guardar</button></footer>
   </form>`, "bicis");
 }
 function biciCsv(){
-  const v = trip(); const rows = [["Nº","Nombre","Alquila","Tipo","Talla","Altura cm","Entrepierna cm","Peso kg","Pedales","Modelo","Proveedor","Nº bici","Entregada","Devuelta","Notas"]];
-  sortedClients().forEach(c => { const b = biciOf(c); rows.push([c.guia?"Guía":pad2(c.num), c.nombre, b.alquila?"Sí":b.propia?"Propia":"No", b.tipo||"", b.talla||"", b.altura||"", b.entrepierna||"", b.peso||"", b.pedales||"", b.modelo||"", b.proveedor||"", b.numero||"", b.ent?"Sí":"", b.dev?"Sí":"", b.notas||""]); });
+  const v = trip(); const rows = [["Nº","Nombre","Alquila","Tipo de bici","Talla","Estatura cm","Pedales","Casco","Entregada","Devuelta","Petición especial"]];
+  sortedClients().forEach(c => { const b = biciOf(c); rows.push([c.guia?"Guía":pad2(c.num), c.nombre, b.alquila?"Sí":b.propia?"Propia":"No", b.tipo||"", b.talla||"", b.altura||"", b.pedales||"", b.casco||"", b.ent?"Sí":"", b.dev?"Sí":"", b.notas||""]); });
   const txt = "﻿" + rows.map(r => r.map(x => { const s = String(x??""); return /[;"\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; }).join(";")).join("\r\n");
   saveFile(`Bicis_${slug(v.nombre)}.csv`, txt, "Lista de bicis descargada");
 }
@@ -1516,7 +1515,7 @@ async function inscAdd(id){
     const data = {num, nombre:d.nombre||"Sin nombre", maletas:1, telefono:d.telefono||"", email:d.email||"", notas, guia:false, tipoHab:d.tipoHab||"", docs, consent, inscripcion:i.id};
     const ref = await S.db.collection(`viajes/${S.vid}/clientes`).add(data);
     const b = d.bici||{};
-    if (b.alquila || b.propia) await S.db.doc(biciPath(ref.id)).set({alquila:!!b.alquila, propia:!!b.propia, tipo:b.tipo||"", talla:b.talla||"", altura:b.altura||"", entrepierna:b.entrepierna||"", peso:b.peso||"", pedales:b.pedales||"", notas:b.notas||""});
+    if (b.alquila || b.propia) await S.db.doc(biciPath(ref.id)).set({alquila:!!b.alquila, propia:!!b.propia, tipo:b.tipo||"", talla:b.talla||"", altura:b.altura||"", pedales:b.pedales||"", casco:b.casco||"", notas:b.notas||""});
     await TBX_PUB.setEstado(i.id, "añadida");
     i.estado = "añadida"; renderMain();
     toast(`${data.nombre} añadido con la etiqueta ${pad2(num)}${comp?` (comparte con ${comp.nombre.split(" ")[0]})`:""}`);
@@ -1531,6 +1530,19 @@ async function crearDesdePlantilla(vid, inicio, tpl){
   for (const e of (tpl.programa||[])) { const {d, ...rest} = e; await S.db.doc(`${base}/etapas/${addDays(inicio, d)}`).set({files:[], tracks:[], enlaces:"", ...rest}); }
   for (const h of (tpl.hoteles||[])) { const {d, ...rest} = h; await S.db.collection(`${base}/hoteles`).add({telefono:"", email:"", reserva:"", plataforma:"", metodo:"", total:0, pagado:0, ...rest, fecha:addDays(inicio, d)}); }
   for (const c of (tpl.compra||[])) await S.db.doc(`${base}/compra/${addDays(inicio, c.d)}`).set({items:c.items.map((x,i) => ({id:Date.now().toString(36)+i+Math.random().toString(36).slice(2,5), t:x.t, q:x.q||"", ok:false}))});
+}
+function fueraDeFechas(v){
+  if (!v.inicio || !v.fin) return {n:0};
+  const fuera = f => f && (f < v.inicio || f > v.fin);
+  const et = Object.keys(S.etapas).filter(k => fuera(k) && dayHas(S.etapas[k])), ho = S.hoteles.filter(h => fuera(h.fecha));
+  const all = [...et, ...ho.map(h => h.fecha), ...Object.keys(S.compra).filter(fuera)].sort();
+  return {n: et.length + ho.length, et: et.length, ho: ho.length, primero: all[0]};
+}
+function fueraBanner(v){
+  if (!isAdmin()) return "";
+  const F = fueraDeFechas(v); if (!F.n) return "";
+  const off = Math.round((parse(v.inicio) - parse(F.primero)) / 86400000);
+  return `<div class="alert" style="margin:0 0 12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between"><p style="margin:0"><b>Hay datos fuera de las fechas del viaje:</b> ${F.et} día${F.et===1?"":"s"} del programa y ${F.ho} hotel${F.ho===1?"":"es"} empiezan el ${esc(fD.format(parse(F.primero)))}. No se ha borrado nada.</p><button class="btn pri sm" style="--sec:var(--due)" data-act="fixFechas" data-off="${off}">Moverlos para que empiecen el ${esc(fD.format(parse(v.inicio)))}</button></div>`;
 }
 async function moverFechas(off){
   if (!off) return;
@@ -1781,7 +1793,7 @@ async function submitForm(form){
       toast("Cliente guardado");
     } else if (m.kind === "bici"){
       const n = k => val(k).trim();
-      const data = {alquila: fd.modo==="alquila", propia: fd.modo==="propia", tipo:n("b-tipo"), talla:n("b-talla"), altura:n("b-altura"), entrepierna:n("b-entrepierna"), peso:n("b-peso"), pedales:n("b-pedales"), modelo:n("b-modelo"), proveedor:n("b-proveedor"), numero:n("b-numero"), notas:n("b-notas")};
+      const data = {alquila: fd.modo==="alquila", propia: fd.modo==="propia", tipo:n("b-tipo"), talla:n("b-talla"), altura:n("b-altura"), pedales:n("b-pedales"), casco:n("b-casco"), notas:n("b-notas")};
       await mutateDoc(biciPath(m.id), cur => ({...cur, ...data}));
       toast("Bici guardada");
     } else if (m.kind === "publico"){
@@ -1949,7 +1961,7 @@ document.addEventListener("click", async ev => {
   if (!b) { if (ev.target.id==="modal") closeModal(); return; }
   const a = b.dataset.act;
   if (a!=="del" && a!=="delFile" && a!=="delPago" && a!=="teamDel" && S.armed && !String(S.armed).startsWith("doc")) S.armed = null;
-  const ADMIN_ACTS = ["publico","unpublish","inscReload","inscFile","inscAdd","inscDel","pend","reloadPend","newTrip","editTrip","general","reloadGen","genYear","newHotel","newClient","editEtapa","upload","delFile","cFirm","cUndo","cMarkSent","pagos","delPago","team","teamDel"];
+  const ADMIN_ACTS = ["fixFechas","publico","unpublish","inscReload","inscFile","inscAdd","inscDel","pend","reloadPend","newTrip","editTrip","general","reloadGen","genYear","newHotel","newClient","editEtapa","upload","delFile","cFirm","cUndo","cMarkSent","pagos","delPago","team","teamDel"];
   if (!isAdmin() && (ADMIN_ACTS.includes(a) || (a==="del" && b.dataset.kind!=="gasto"))) { toast("Esto solo lo puede hacer el administrador."); return; }
   switch(a){
     case "team": await loadTeam(); teamForm(); break;
@@ -1966,6 +1978,7 @@ document.addEventListener("click", async ev => {
     case "gotoDay": S.day.eta = b.dataset.f; S.tab = "etapas"; renderMain(); window.scrollTo(0,0); break;
     case "gotoShop": S.day.com = b.dataset.f; S.tab = "compra"; renderMain(); window.scrollTo(0,0); break;
     case "rooming": roomingForm(); break;
+    case "fixFechas": { b.disabled = true; b.textContent = "Moviendo…"; try { await moverFechas(+b.dataset.off); toast("Programa y hoteles movidos a las fechas del viaje"); } catch(e){ writeErr(e); } break; }
     case "editBici": biciForm(b.dataset.id); break;
     case "biciTg": { const c = S.clientes.find(x => x.id===b.dataset.id); if (!c) break; const k = b.dataset.k, on = !biciOf(c)[k];
       mutateDoc(biciPath(c.id), cur => ({...cur, [k]:on})).catch(writeErr); break; }

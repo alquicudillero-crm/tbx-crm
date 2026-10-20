@@ -59,12 +59,12 @@
       <div class="f"><label for="emTel">Teléfono de emergencia <span class="req">*</span></label><input id="emTel" type="tel" required></div>
       ${bicis ? `<h2>Bicicleta</h2>
       <div class="f full"><label>¿Necesitas bici de alquiler?</label>${pills("bici", ["Sí, alquilo bici","No, llevo la mía"])}</div>
-      <div class="f bici-x"><label for="bTipo">Tipo de bici</label><select id="bTipo"><option value="">—</option><option>Carretera</option><option>E-bike carretera</option><option>Gravel</option><option>E-gravel</option><option>MTB</option><option>E-MTB</option></select></div>
-      <div class="f bici-x"><label for="bPedales">Pedales</label><select id="bPedales"><option value="">—</option><option>Planos</option><option>SPD (MTB)</option><option>SPD-SL (Shimano carretera)</option><option>Look Keo</option><option>Llevo los míos</option></select></div>
-      <div class="f bici-x"><label for="bAltura">Tu altura (cm)</label><input id="bAltura" type="number" inputmode="numeric" min="120" max="220"></div>
-      <div class="f bici-x"><label for="bEntre">Entrepierna (cm)</label><input id="bEntre" type="number" inputmode="numeric" min="50" max="110"><span class="hint">Descalzo, de suelo a ingle.</span></div>
-      <div class="f bici-x"><label for="bTalla">Talla habitual (si la sabes)</label><input id="bTalla" placeholder="S, M, L, 54…"></div>
-      <div class="f bici-x"><label for="bPeso">Peso aproximado (kg)</label><input id="bPeso" type="number" inputmode="numeric"><span class="hint">Solo para e-bikes.</span></div>` : ""}
+      <div class="f bici-x"><label for="bTipo">Tipo de bici</label><select id="bTipo"><option value="">—</option><option>E-bike doble suspensión</option><option>E-bike suspensión delantera</option><option>MTB</option><option>Road bike</option></select></div>
+      <div class="f bici-x"><label for="bPedales">Pedales</label><select id="bPedales"><option value="">—</option><option>SPD</option><option>Planos</option></select></div>
+      <div class="f bici-x"><label for="bAltura">Tu estatura (cm)</label><input id="bAltura" type="number" inputmode="numeric" min="120" max="220"></div>
+      <div class="f bici-x"><label for="bTalla">Talla de bici (si la sabes)</label><input id="bTalla" placeholder="S, M, L, XL…"></div>
+      <div class="f bici-x"><label>¿Quieres casco?</label><div class="pills"><label><input type="radio" name="casco" value="Sí"><span>Sí</span></label><label><input type="radio" name="casco" value="No"><span>No, llevo el mío</span></label></div></div>
+      <div class="f full bici-x"><label for="bPeticion">Petición especial para la bici</label><input id="bPeticion" placeholder="Opcional"></div>` : ""}
       <div class="f full"><label for="comentarios">Comentarios</label><textarea id="comentarios" placeholder="Cualquier cosa que debamos saber"></textarea></div>
       <h2>Consentimiento y firma</h2>
       ${V.consentimiento ? `<p class="full" style="margin:0"><a class="btn" href="${esc(V.consentimiento)}" target="_blank" rel="noopener">Leer las bases y el consentimiento (PDF)</a></p>` : ""}
@@ -127,7 +127,7 @@
       const alquila = radio("bici") === "Sí, alquilo bici", propia = radio("bici") === "No, llevo la mía";
       const data = {nombre:val("nombre"), email:val("email").toLowerCase(), telefono:val("telefono"), documento:val("documento"), nacimiento:val("nacimiento"),
         tipoHab:radio("tipoHab"), compartida:val("compartida"), alergias:val("alergias"), emergencia:`${val("emNombre")} · ${val("emTel")}`, comentarios:val("comentarios"),
-        bici: bicis ? {alquila, propia, tipo:alquila?val("bTipo"):"", pedales:alquila?val("bPedales"):"", altura:alquila?val("bAltura"):"", entrepierna:alquila?val("bEntre"):"", talla:alquila?val("bTalla"):"", peso:alquila?val("bPeso"):""} : null,
+        bici: bicis ? {alquila, propia, tipo:alquila?val("bTipo"):"", pedales:alquila?val("bPedales"):"", altura:alquila?val("bAltura"):"", talla:alquila?val("bTalla"):"", casco:alquila?(radio("casco")==="Sí"?"Sí":radio("casco")?"No":""):"", notas:alquila?val("bPeticion"):""} : null,
         archivos, aceptaciones:ACEPTA, firma:sigPng(), firmadoEn:new Date().toISOString(), viaje:V.nombre};
       const {error} = await sb.from("tbx_inscripciones").insert({slug, data});
       if (error) throw new Error("No se pudo enviar la inscripción. Inténtalo de nuevo.");
