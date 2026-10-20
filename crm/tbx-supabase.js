@@ -50,7 +50,18 @@
         <button type="submit" id="tbxGo">Entrar</button>
         <div class="msg" id="tbxMsg">${msg || ""}</div>
       </form>
-      <button type="button" id="tbxForgot" style="background:transparent;color:#a3a89d;font-weight:600;font-size:13px;padding:0;justify-self:start;text-decoration:underline">He olvidado la contraseña</button>`);
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <button type="button" id="tbxFirst" style="background:transparent;color:#b5c036;font-weight:700;font-size:13px;padding:0;text-decoration:underline">Primera vez: crear mi contraseña</button>
+        <button type="button" id="tbxForgot" style="background:transparent;color:#a3a89d;font-weight:600;font-size:13px;padding:0;text-decoration:underline">He olvidado la contraseña</button>
+      </div>`);
+    el.querySelector("#tbxFirst").addEventListener("click", async () => {
+      const email = el.querySelector("#tbxEmail").value.trim().toLowerCase(), pass = el.querySelector("#tbxPass").value, m = el.querySelector("#tbxMsg");
+      if (!email || pass.length < 8) { m.className = "msg"; m.textContent = "Escribe tu email y una contraseña nueva de al menos 8 caracteres, y vuelve a pulsar."; return; }
+      const { data, error } = await sb.auth.signUp({ email, password: pass, options: { emailRedirectTo: location.origin + location.pathname } });
+      if (error) { m.className = "msg"; m.textContent = /registered|already/i.test(error.message) ? "Ya tienes cuenta: entra con tu contraseña o usa «He olvidado la contraseña»." : "Este email no está autorizado. Pide al administrador que te añada al equipo."; return; }
+      if (data.session) { start(data.session); return; }
+      m.className = "msg ok"; m.textContent = "Te hemos enviado un email: ábrelo y pulsa el enlace para activar tu cuenta.";
+    });
     el.querySelector("#tbxEmail").focus();
     el.querySelector("#tbxLogin").addEventListener("submit", async ev => {
       ev.preventDefault();
@@ -83,13 +94,21 @@
   async function start(session) {
     if (started || !session) return;
     // Only people listed in tbx_team may use the CRM (the database rules enforce it too).
-    const { data, error } = await sb.from("tbx_team").select("email").limit(1);
+    const myEmail = String(session.user.email || "").toLowerCase();
+    let { data, error } = await sb.from("tbx_team").select("email,rol,nombre").eq("email", myEmail).limit(1);
+    if (error && /rol|nombre|column/i.test(error.message || "")) {
+      // database still without roles (02_roles.sql not run yet): the existing team members are administrators
+      ({ data, error } = await sb.from("tbx_team").select("email").limit(1));
+      if (data) data = data.map(r => ({ ...r, rol: "admin", nombre: "" }));
+    }
     if (error || !data || !data.length) {
       overlay(`<h1>Sin acceso</h1><p class="small">Tu usuario (${escapeHtml(session.user.email)}) no está en el equipo de Travel Bikex. Pide al administrador que te añada a la tabla <b>tbx_team</b> en Supabase.</p><button type="button" id="tbxOut">Salir</button>`)
         .querySelector("#tbxOut").addEventListener("click", () => sb.auth.signOut());
       return;
     }
     started = true;
+    window.TBX_ME = { email: myEmail, rol: data[0].rol || "guia", nombre: data[0].nombre || "" };
+    document.documentElement.classList.toggle("rol-guia", window.TBX_ME.rol !== "admin");
     closeOverlay();
     const top = document.querySelector(".top");
     if (top && !top.querySelector(".tbx-logout")) {
@@ -314,6 +333,17 @@
       } catch (e) { prog.className = "msg"; prog.textContent = "Error al importar: " + (e.message || e); }
     });
   }
+
+  /* ---------- team management (administrador) ---------- */
+  window.TBX_TEAM = {
+    async list() { const { data, error } = await sb.from("tbx_team").select("email,rol,nombre").order("email"); if (error) throw error; return data; },
+    async save(m) {
+      const row = { email: String(m.email || "").trim().toLowerCase(), rol: m.rol === "admin" ? "admin" : "guia", nombre: String(m.nombre || "").trim() };
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(row.email)) { const e = new Error("Email no válido"); e.code = "invalid_argument"; throw e; }
+      const { error } = await sb.from("tbx_team").upsert(row); if (error) throw error; return row;
+    },
+    async remove(email) { const { error } = await sb.from("tbx_team").delete().eq("email", String(email).toLowerCase()); if (error) throw error; }
+  };
 
   /* ---------- the window.claude shim the CRM expects ---------- */
   window.claude = {

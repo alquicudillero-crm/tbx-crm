@@ -100,6 +100,13 @@ main{min-width:0;padding-block:22px 70px;padding-left:28px;padding-right:max(16p
 .trip-item span{font-size:12.5px;color:var(--muted)}
 .gen-btn{display:flex;align-items:center;gap:10px;border:0;border-radius:var(--r);padding:12px 14px;background:var(--brand-grad);color:#0b0b0b;font-weight:800;cursor:pointer;text-align:left;width:100%}
 .gen-btn.sel{box-shadow:0 0 0 3px #ffffff}
+.rol-guia .admin-only{display:none!important}
+.team-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;border:1px solid #2c2e29;border-radius:var(--r);background:#141513;color:#f1f2ee;padding:10px 14px;font-weight:700;cursor:pointer;text-align:left}
+.team-btn:hover{border-color:#b5c036}
+.team-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.team-row .who{flex:1 1 180px;min-width:0}
+.team-row .who b{display:block;overflow:hidden;text-overflow:ellipsis}
+.ro-note{grid-column:1/-1;background:var(--sunk);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--muted)}
 .gen-btn span{font-weight:500;font-size:12px;opacity:.9;display:block}
 .chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--sunk);color:var(--muted);white-space:nowrap}
 .chip.live{background:var(--ok-bg);color:var(--ok)} .chip.bici{background:var(--s-eta-bg);color:var(--s-eta)} .chip.trek{background:var(--s-gas-bg);color:var(--s-gas)} .chip.otro{background:var(--s-bal-bg);color:var(--s-bal)}
@@ -438,6 +445,8 @@ const covers = (h, f) => !!h.fecha && !!f && f >= h.fecha && f < addDays(h.fecha
 const hotelPaid = h => (+h.total||0) > 0 && (+h.pagado||0) >= (+h.total||0) - 0.005;
 const pend = h => Math.max(0, (+h.total||0) - (+h.pagado||0));
 const trip = () => S.viajes.find(v => v.id === S.vid);
+const isAdmin = () => !window.TBX_ME || window.TBX_ME.rol === "admin";
+const AO = 'admin-only';
 const sortedClients = () => [...S.clientes].sort((a,b) => (+a.num||999)-(+b.num||999) || String(a.nombre).localeCompare(b.nombre));
 function roomOf(fecha, cid){ return (S.rooming[fecha] && S.rooming[fecha].c && S.rooming[fecha].c[cid]) || {}; }
 const ivaParts = g => { const t=+g.total||0, p = g.tipo==="factura" ? (+g.iva||0) : 0; const base = p ? t/(1+p/100) : t; return {base:r2(base), cuota:r2(t-base), pct:p}; };
@@ -455,6 +464,7 @@ function writeErr(e){
   else toast("No se pudo guardar. Revisa la conexión e inténtalo de nuevo.");
 }
 const queues = {};
+const finPath = cid => `viajes/${S.vid}/finanzas/${cid}`;
 function serial(key, fn){ const p = (queues[key] || Promise.resolve()).then(fn); queues[key] = p.catch(()=>{}); return p; }
 function mutateDoc(path, fn){
   return serial(path, async () => {
@@ -491,7 +501,7 @@ function subscribeTrips(){
     renderAll();
   }, e => { setSync("off","Sin conexión"); console.warn(e); });
 }
-function closeTrip(){ S.unsubs.forEach(u=>u()); S.unsubs = []; S.vid = null; S.hoteles=[]; S.clientes=[]; S.rooming={}; S.gastos=[]; S.etapas={}; S.compra={}; S.day={}; }
+function closeTrip(){ S.unsubs.forEach(u=>u()); S.unsubs = []; S.vid = null; S.hoteles=[]; S.clientes=[]; S.clientesRaw=[]; S.fin={}; S.rooming={}; S.gastos=[]; S.etapas={}; S.compra={}; S.day={}; }
 function openTrip(id, silent){
   S.view = "trip";
   if (S.vid === id) { renderAll(); return; }
@@ -500,7 +510,10 @@ function openTrip(id, silent){
   const base = `viajes/${id}`;
   const sub = (c, fn) => S.unsubs.push(S.db.collection(base+"/"+c).onSnapshot(s => { fn(s); renderMain(); renderTabsOnly(); }, e=>console.warn(e)));
   sub("hoteles", s => S.hoteles = s.docs.map(d=>({id:d.id,...d.data()})));
-  sub("clientes", s => S.clientes = s.docs.map(d=>({id:d.id,...d.data()})));
+  S.clientesRaw = []; S.fin = {};
+  const mergeFin = () => { S.clientes = S.clientesRaw.map(c => ({...c, ...(S.fin[c.id]||{})})); };
+  sub("clientes", s => { S.clientesRaw = s.docs.map(d=>({id:d.id,...d.data()})); mergeFin(); });
+  if (isAdmin()) sub("finanzas", s => { const r={}; s.docs.forEach(d=>r[d.id]=d.data()); S.fin = r; mergeFin(); });
   sub("gastos", s => S.gastos = s.docs.map(d=>({id:d.id,...d.data()})));
   sub("rooming", s => { const r={}; s.docs.forEach(d=>r[d.id]=d.data()); S.rooming = r; });
   sub("etapas", s => { const r={}; s.docs.forEach(d=>r[d.id]=d.data()); S.etapas = r; });
@@ -533,11 +546,13 @@ function renderSide(){
       ${tripState(v)==="live"?' <span class="chip live">En curso</span>':""}</div></button>`;
   const block = (t, arr) => arr.length ? `<div class="label">${t}</div><div class="trip-list">${arr.map(item).join("")}</div>` : "";
   el.innerHTML = `
-    <button class="gen-btn ${S.view==="general"?"sel":""}" data-act="general"><div>Balance general<span>Cobros, gastos y beneficio de todos los viajes</span></div></button>
+    <button class="gen-btn ${AO} ${S.view==="general"?"sel":""}" data-act="general"><div>Balance general<span>Cobros, gastos y beneficio de todos los viajes</span></div></button>
     <div class="side-head"><h2 style="font-size:21px;text-transform:uppercase">Viajes</h2>
-      <button class="btn pri sm" data-act="newTrip" style="--sec:#b5c036;color:#0b0b0b">+ Nuevo viaje</button></div>
+      <button class="btn pri sm ${AO}" data-act="newTrip" style="--sec:#b5c036;color:#0b0b0b">+ Nuevo viaje</button></div>
     ${!S.loadedTrips ? '<div class="hint">Cargando viajes…</div>' : !S.viajes.length ? '<div class="hint">Todavía no hay viajes. Crea el primero con el botón de arriba.</div>' : ""}
-    ${block("En curso", groups.live)}${block("Próximos", groups.next)}${block("Sin fecha", groups[""])}${block("Realizados", groups.past)}`;
+    ${block("En curso", groups.live)}${block("Próximos", groups.next)}${block("Sin fecha", groups[""])}${block("Realizados", groups.past)}
+    ${window.TBX_TEAM?`<div style="margin-top:auto;padding-top:12px" class="${AO}"><button class="team-btn" data-act="team">Equipo y accesos<span style="color:#b5c036">→</span></button></div>`:""}
+    ${window.TBX_ME?`<div class="hint" style="font-size:12px">${esc(window.TBX_ME.nombre||window.TBX_ME.email)} · ${window.TBX_ME.rol==="admin"?"Administrador":"Guía"}</div>`:""}`;
 }
 
 /* ---------- render: main ---------- */
@@ -558,9 +573,10 @@ function paintMain(el){
   const v = trip();
   if (!v){
     el.className = "";
-    el.innerHTML = `<div class="empty"><h2>Elige un viaje</h2><p>Selecciona un viaje en el menú para ver sus hoteles, etapas, gastos, lista de la compra, clientes, List Room y balance.</p><button class="btn pri" data-act="newTrip">+ Crear un viaje</button></div>`;
+    el.innerHTML = `<div class="empty"><h2>Elige un viaje</h2><p>Selecciona un viaje en el menú para ver sus hoteles, etapas, gastos, lista de la compra, clientes, List Room y balance.</p><button class="btn pri ${AO}" data-act="newTrip">+ Crear un viaje</button></div>`;
     return;
   }
+  if (!isAdmin() && S.tab === "balance") S.tab = "hoteles";
   el.className = "sec-" + S.tab;
   const pendH = S.hoteles.filter(h => !hotelPaid(h)).length;
   const sinFoto = S.gastos.filter(g => !g.foto).length;
@@ -589,8 +605,9 @@ function paintMain(el){
       <div class="trip-meta"><span class="chip ${tc}">${esc(TIPOS[v.tipo]||"Viaje")}</span>${v.espana?'<span class="chip es">España · facturas con IVA</span>':'<span class="chip">Extranjero · tickets</span>'}
         <span>${esc(rangeTxt(v))}</span>${tripState(v)==="live"?'<span class="chip live">En curso</span>':""}
         ${v.notas?`<span>· ${esc(v.notas)}</span>`:""}</div></div>
-      <div class="actions">${v.paginaClientes?`<a class="btn pri" style="--sec:var(--s-eta)" href="${esc(v.paginaClientes)}" target="_blank" rel="noopener">Página de clientes ↗</a>`:`<button class="btn" data-act="editTrip" title="Añade el enlace a la página de clientes">+ Página de clientes</button>`}<button class="btn" data-act="editTrip">Editar viaje</button></div></div>
-    <nav class="tabs" role="tablist">${TABS.map(([k,t]) => `<button class="tab sec-${k} ${S.tab===k?"on":""}" data-act="tab" data-t="${k}"><i class="dot"></i>${t}${badge[k]||""}</button>`).join("")}</nav>
+      <div class="actions">${v.paginaClientes?`<a class="btn pri" style="--sec:var(--s-eta)" href="${esc(v.paginaClientes)}" target="_blank" rel="noopener">Página de clientes ↗</a>`:`<button class="btn ${AO}" data-act="editTrip" title="Añade el enlace a la página de clientes">+ Página de clientes</button>`}<button class="btn ${AO}" data-act="editTrip">Editar viaje</button></div></div>
+    ${isAdmin() && (v.guias||[]).length?`<div class="trip-meta" style="margin:-6px 0 12px"><span class="label">Guías con acceso</span>${(v.guias||[]).map(g=>`<span class="chip">${esc(teamName(g))}</span>`).join("")}</div>`:""}
+    <nav class="tabs" role="tablist">${TABS.filter(([k]) => isAdmin() || k !== "balance").map(([k,t]) => `<button class="tab sec-${k} ${S.tab===k?"on":""}" data-act="tab" data-t="${k}"><i class="dot"></i>${t}${badge[k]||""}</button>`).join("")}</nav>
     ${body}`;
   if (S.tab === "gastos") { const f = document.createElement("div"); f.id="fab-holder"; f.innerHTML = `<button class="fab" data-act="newGasto">+ Ticket</button>`; document.body.appendChild(f); }
 }
@@ -622,7 +639,7 @@ function viewHoteles(v){
     const hs = S.hoteles.filter(h => covers(h,f) && h.grupo===g);
     return `<div class="slot"><div class="slot-label">Hotel de ${g==="guias"?"guías":"clientes"}</div>
       ${hs.map(hotelCard).join("")}
-      ${hs.length?"":`<button class="add-slot" data-act="newHotel" data-f="${f}" data-g="${g}">+ Añadir hotel de ${g==="guias"?"guías":"clientes"}</button>`}</div>`;
+      ${hs.length?"":`<button class="add-slot ${AO}" data-act="newHotel" data-f="${f}" data-g="${g}">+ Añadir hotel de ${g==="guias"?"guías":"clientes"}</button>`}</div>`;
   };
   const npaid = S.hoteles.filter(hotelPaid).length;
   return head + `<div class="tiles">
@@ -633,7 +650,7 @@ function viewHoteles(v){
     <div class="nights">${ns.map((f,i) => {
       const d = parse(f);
       return `<div class="night"><div class="night-date"><div class="d">Noche ${i+1}</div><div class="w">${fW.format(d)} ${fD.format(d)}</div>
-        <button class="btn ghost sm" data-act="newHotel" data-f="${f}" data-g="clientes" title="Añadir otro hotel a esta noche">+ otro hotel</button></div>
+        <button class="btn ghost sm ${AO}" data-act="newHotel" data-f="${f}" data-g="clientes" title="Añadir otro hotel a esta noche">+ otro hotel</button></div>
         ${slot(f,"clientes")}${slot(f,"guias")}</div>`; }).join("")}</div>
     ${outside.length?`<h3 style="margin:22px 0 10px;font-size:18px;text-transform:uppercase">Hoteles fuera de las fechas del viaje</h3><div class="lr-grid">${outside.map(hotelCard).join("")}</div>`:""}`;
 }
@@ -651,7 +668,7 @@ function viewEtapas(v){
   return head + dayPicker("eta", ds, d => S.etapas[d] && S.etapas[d].titulo ? "has" : "") + `
     <div class="stage">
       <div class="stage-top"><h2>Día ${i+1}${e.titulo?" · "+esc(e.titulo):""}</h2><span>${esc(fLong.format(parse(f)))}</span>
-        <button class="btn sm" data-act="editEtapa" data-f="${f}" style="margin-left:auto">${has?"Editar etapa":"+ Rellenar etapa"}</button></div>
+        <button class="btn sm ${AO}" data-act="editEtapa" data-f="${f}" style="margin-left:auto">${has?"Editar etapa":"+ Rellenar etapa"}</button></div>
       ${has ? `<div class="stage-stats">
         ${stat("Distancia", e.km, "km")}${stat("Desnivel +", e.desnivel, "m")}${stat("Hora de salida", e.hora)}${stat("Salida → llegada", [e.salida,e.llegada].filter(Boolean).join(" → "))}
       </div>
@@ -664,13 +681,13 @@ function viewEtapas(v){
           ${(e.tracks||[]).map(d => `<span class="doc"><button type="button" data-act="dlTracks" data-f="${f}" data-did="${esc(d.id)}" style="font-size:12.5px;color:var(--ink);padding:0;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Descargar ${esc(d.nombre)}">${esc(d.nombre)}</button>
             <button data-act="delFile" data-kind="track" data-id="${esc(f)}" data-did="${esc(d.id)}" class="${S.armed==="doc"+d.id?"armed":""}" aria-label="Quitar track">${S.armed==="doc"+d.id?"¿Quitar?":"×"}</button></span>`).join("")}
           ${(e.tracks||[]).length>1?`<button class="btn sm" data-act="dlTracks" data-f="${f}">Descargar todos (.zip)</button>`:""}
-          ${S.assets?`<button class="btn sm" data-act="upload" data-kind="track" data-id="${f}">Subir tracks</button>`:""}
+          ${S.assets?`<button class="btn sm ${AO}" data-act="upload" data-kind="track" data-id="${f}">Subir tracks</button>`:""}
           ${(e.tracks||[]).length||S.assets?"":'<span class="hint">Sin tracks.</span>'}</div>
           ${linksOf(e).length?`<div class="docs" style="margin-top:8px">${linksOf(e).map(u => `<a class="btn sm" href="${esc(u)}" target="_blank" rel="noopener">${esc(hostOf(u))} ↗</a>`).join("")}</div>`:""}
           ${(e.tracks||[]).length?'<p class="hint" style="margin-top:6px">Se descargan dentro de un .zip con su nombre original, listos para el GPS o la app.</p>':""}</div>
         ${hotel?`<div class="stage-hotel"><h4>Hotel de clientes esta noche</h4><p><b>${esc(hotel.nombre)}</b>${hotel.ciudad?" · "+esc(hotel.ciudad):""}${hotel.telefono?" · "+esc(hotel.telefono):""}</p></div>`:""}
         <div><h4>Archivos de la etapa (rutómetro, mapas, perfil…)</h4><div class="docs">${fileChips(e.files, "etapa", f)}
-          ${S.assets?`<button class="btn sm" data-act="upload" data-kind="etapa" data-id="${f}">Subir archivo</button>`:""}</div></div>
+          ${S.assets?`<button class="btn sm ${AO}" data-act="upload" data-kind="etapa" data-id="${f}">Subir archivo</button>`:""}</div></div>
       </div>` : `<div class="stage-body"><p class="hint">Todavía no hay información de esta etapa. Pulsa «Rellenar etapa» para añadir el recorrido, los kilómetros, el desnivel y los avisos del día.</p></div>`}
     </div>`;
 }
@@ -681,7 +698,7 @@ function linksOf(e){
 function hostOf(u){ try { return new URL(u).hostname.replace(/^www\./,""); } catch(e){ return "Enlace"; } }
 function fileChips(files, kind, owner){
   return (files||[]).map(d => `<span class="doc"><a href="/_blob/${esc(d.id)}" target="_blank" rel="noopener" title="${esc(d.nombre)}">${esc(d.nombre)}</a>
-    <button data-act="delFile" data-kind="${kind}" data-id="${esc(owner)}" data-did="${esc(d.id)}" class="${S.armed==="doc"+d.id?"armed":""}" aria-label="Quitar archivo">${S.armed==="doc"+d.id?"¿Quitar?":"×"}</button></span>`).join("");
+    <button data-act="delFile" data-kind="${kind}" data-id="${esc(owner)}" data-did="${esc(d.id)}" class="${AO} ${S.armed==="doc"+d.id?"armed":""}" aria-label="Quitar archivo">${S.armed==="doc"+d.id?"¿Quitar?":"×"}</button></span>`).join("");
 }
 
 /* ===== GASTOS ===== */
@@ -723,7 +740,7 @@ function gastoRow(g){
     <div class="thumb ${g.foto?"":"miss"}">${g.foto ? (isImg?`<img src="/_blob/${esc(g.foto.id)}" alt="" loading="lazy">`:"PDF") : "SIN<br>FOTO"}</div>
     <div class="gt"><b>${esc(g.concepto||CATS[c])}</b><div class="row"><span class="chip" style="background:var(--cbg);color:var(--cc)">${CATS[c]}</span>
       ${g.tipo==="factura"?`<span class="chip es">Factura · IVA ${p.pct}%</span>`:'<span class="chip">Ticket sin IVA</span>'}
-      ${g.metodo?`<span class="chip">${esc(g.metodo)}</span>`:""}${g.pagadoPor?`<span class="chip">${esc(g.pagadoPor)}</span>`:""}</div></div>
+      ${g.metodo?`<span class="chip">${esc(g.metodo)}</span>`:""}${g.pagadoPor?`<span class="chip">${esc(g.pagadoPor)}</span>`:""}${g.soloAdmin?'<span class="chip due">Solo administrador</span>':""}</div></div>
     <div class="amt"><b>${money(g.total)}</b>${g.tipo==="factura"?`<small>base ${money(p.base)} + IVA ${money(p.cuota)}</small>`:""}</div></button>`;
 }
 
@@ -763,23 +780,23 @@ function viewClientes(v){
       <td><span class="tagno">${esc(pad2(c.num))}</span>${shared?`<div class="hint" style="margin-top:4px;white-space:nowrap">Compartida · ${g.maletas} mal.</div>`:""}</td>
       <td><b>${esc(c.nombre)}</b>${c.guia?' <span class="chip trek">Guía</span>':""}${c.telefono||c.email?`<div class="hint">${esc([c.telefono,c.email].filter(Boolean).join(" · "))}</div>`:""}${c.notas?`<div class="hint">${esc(c.notas)}</div>`:""}</td>
       <td class="num" style="text-align:center">${esc(c.maletas||0)}</td>
-      <td>${c.guia?'<span class="hint">—</span>':`<button class="btn ghost sm" data-act="pagos" data-id="${esc(c.id)}" style="padding:0">${payChip(c)}</button>`}</td>
+      <td class="${AO}">${c.guia?'<span class="hint">—</span>':`<button class="btn ghost sm" data-act="pagos" data-id="${esc(c.id)}" style="padding:0">${payChip(c)}</button>`}</td>
       <td>${c.guia?'<span class="hint">—</span>':consentCell(c)}</td>
       <td><div class="docs">${fileChips(c.docs,"cliente",c.id)}${(c.docs||[]).length?"":'<span class="nodoc">Sin documentación</span>'}
-        ${S.assets?`<button class="btn sm" data-act="upload" data-kind="cliente" data-id="${esc(c.id)}">Subir PDF</button>`:""}</div></td>
-      <td class="r"><button class="btn ghost sm" data-act="editClient" data-id="${esc(c.id)}">Editar</button></td></tr>`; };
-  const rows = cl.map(row).join("") + (gu.length ? `<tr><td colspan="7" style="background:var(--sunk)"><span class="label">Guías (${gu.length}) · no cuentan como clientes</span></td></tr>` + gu.map(row).join("") : "");
+        ${S.assets?`<button class="btn sm ${AO}" data-act="upload" data-kind="cliente" data-id="${esc(c.id)}">Subir PDF</button>`:""}</div></td>
+      <td class="r"><button class="btn ghost sm" data-act="editClient" data-id="${esc(c.id)}">${isAdmin()?"Editar":"Ver"}</button></td></tr>`; };
+  const rows = cl.map(row).join("") + (gu.length ? `<tr><td colspan="${isAdmin()?7:6}" style="background:var(--sunk)"><span class="label">Guías (${gu.length}) · no cuentan como clientes</span></td></tr>` + gu.map(row).join("") : "");
   const sinDoc = cl.filter(c=>!(c.docs||[]).length).length;
   return secTitle("Clientes y documentación", "Cada cliente con su número de etiqueta, sus maletas y su documentación. Desde aquí se prepara el envío de toda la documentación al hotel de cada noche.",
-      `<button class="btn pri" data-act="newClient">+ Añadir cliente</button>`) + `
+      `<button class="btn pri ${AO}" data-act="newClient">+ Añadir cliente</button>`) + `
   <div class="tiles">
     <div class="tile" style="--tc:var(--s-cli)"><span class="label">Clientes</span><span class="v">${cl.length}</span>${gu.length?`<small>+ ${gu.length} guía${gu.length>1?"s":""}</small>`:""}</div>
     <div class="tile" style="--tc:var(--s-room)"><span class="label">Etiquetas</span><span class="v">${groups.length}</span><small>${cl.reduce((a,c)=>a+(+c.maletas||0),0)} maletas en total</small></div>
     <div class="tile" style="--tc:${sinDoc?"var(--due)":"var(--ok)"}"><span class="label">Clientes sin documentación</span><span class="v">${sinDoc}</span></div>
   </div>
-  ${cl.length?consentPanel(v, cl):""}
+  ${cl.length && isAdmin()?consentPanel(v, cl):""}
   <div class="panel">
-    ${cs.length?`<div class="tbl-wrap"><table><thead><tr><th>Nº etiqueta</th><th>Cliente</th><th style="text-align:center">Maletas</th><th>Pagos</th><th>Consentimiento</th><th>Documentación</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
+    ${cs.length?`<div class="tbl-wrap"><table><thead><tr><th>Nº etiqueta</th><th>Cliente</th><th style="text-align:center">Maletas</th><th class="${AO}">Pagos</th><th>Consentimiento</th><th>Documentación</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
       :`<div class="empty" style="margin:24px auto"><p>Añade a los clientes con su número de etiqueta y cuántas maletas llevan. Ese número se usará todos los días en el List Room.</p></div>`}
     ${S.assets?"":'<div class="hint" style="padding:10px 16px">Solo las personas con permiso de edición pueden subir documentos.</div>'}
   </div>
@@ -803,7 +820,7 @@ function consentCell(c){
   const acts = k.estado==="firmado"
     ? `${k.doc?`<a class="btn sm" href="/_blob/${esc(k.doc.id)}" target="_blank" rel="noopener">Ver firmado</a>`:""}<button class="btn ghost sm ${S.armed==="cu"+c.id?"danger armed":""}" data-act="cUndo" data-id="${esc(c.id)}">${S.armed==="cu"+c.id?"¿Quitar firma?":"Deshacer"}</button>`
     : `${S.assets?`<button class="btn sm" data-act="upload" data-kind="firmado" data-id="${esc(c.id)}">Subir firmado</button>`:""}<button class="btn ghost sm" data-act="cFirm" data-id="${esc(c.id)}">Marcar firmado</button>`;
-  return `<div class="docs">${chip}${mail?"":'<span class="nodoc">Falta email</span>'}${acts}</div>`;
+  return `<div class="docs">${chip}${mail?"":'<span class="nodoc">Falta email</span>'}${isAdmin()?acts:""}</div>`;
 }
 function consentPanel(v, cl){
   const st = c => (c.consent||{}).estado || "";
@@ -968,7 +985,7 @@ function viewBalance(v){
     <div class="panel" style="margin-top:14px">
       <div class="panel-head"><h3>Pagos de los clientes</h3><span class="hint">Los cambios se guardan al salir de cada casilla.</span></div>
       ${cs.length?`<div class="tbl-wrap"><table><thead><tr><th>Nº</th><th>Cliente</th><th class="r">Precio del viaje</th><th class="r">Pagado</th><th class="r">Pendiente</th><th>Pagos (cuándo y cómo)</th></tr></thead><tbody>
-        ${cs.map(c => { const cob = cobradoOf(c); const p = Math.max(0,(+c.precio||0)-cob); const ps = pagosOf(c); return `<tr><td><span class="tagno">${esc(pad2(c.num))}</span></td><td><b>${esc(c.nombre)}</b></td>
+        ${cs.map(c => { const cob = cobradoOf(c); const p = Math.max(0,(+c.precio||0)-cob); const ps = pagosOf(c); return `<tr><td><span class="tagno">${esc(pad2(c.num))}</span></td><td><b>${esc(c.nombre)}</b>${c.notaAdmin?`<div class="hint" style="max-width:280px">${esc(c.notaAdmin)}</div>`:""}</td>
           <td class="r"><input class="pay-in keep" type="number" step="0.01" min="0" inputmode="decimal" id="pp-${esc(c.id)}" data-cid="${esc(c.id)}" data-k="precio" value="${esc(c.precio??"")}"></td>
           <td class="r num" style="font-weight:600">${money(cob)}</td>
           <td class="r num ${p>0.005?"neg":"pos"}" style="font-weight:600">${(+c.precio||0)?(p>0.005?money(p):"Pagado"):"—"}</td>
@@ -984,8 +1001,9 @@ async function loadGeneral(){
   for (const v of S.viajes){
     try {
       const base = `viajes/${v.id}`;
-      const [c,h,g] = await Promise.all(["clientes","hoteles","gastos"].map(x => S.db.collection(base+"/"+x).get()));
-      const F = tripFinance(c.docs.map(d=>d.data()), h.docs.map(d=>d.data()), g.docs.map(d=>d.data()));
+      const [c,h,g,fz] = await Promise.all(["clientes","hoteles","gastos","finanzas"].map(x => S.db.collection(base+"/"+x).get()));
+      const fm = {}; fz.docs.forEach(d => fm[d.id] = d.data());
+      const F = tripFinance(c.docs.map(d=>({...d.data(), ...(fm[d.id]||{})})), h.docs.map(d=>d.data()), g.docs.map(d=>d.data()));
       rows.push({v, F});
     } catch(e){ console.warn(e); }
   }
@@ -1022,7 +1040,14 @@ function viewGeneral(){
 }
 
 /* ---------- modals ---------- */
-function openModal(html, sec){ const m = $("#modal"); m.className = "overlay " + (sec?"sec-"+sec:""); m.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`; m.hidden = false; const f = m.querySelector("input:not([type=file]):not([type=radio]),select,textarea"); if (f && window.innerWidth>700) f.focus(); }
+function openModal(html, sec){ const m = $("#modal"); m.className = "overlay " + (sec?"sec-"+sec:""); m.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`; m.hidden = false;
+  if (!isAdmin() && S.modal && ["trip","hotel","client","etapa"].includes(S.modal.kind)) {
+    m.querySelectorAll("form input, form select, form textarea").forEach(x => x.disabled = true);
+    m.querySelectorAll('form button[type=submit], form [data-act=del], form [data-act=allPaid], form [data-act=pagos], form .chk').forEach(x => x.remove());
+    const f0 = m.querySelector("form"); if (f0) f0.insertAdjacentHTML("afterbegin", '<div class="ro-note">Solo lectura: los cambios los hace el administrador.</div>');
+    m.querySelectorAll('form [data-act=close]').forEach(x => x.textContent = "Cerrar");
+    return;
+  } const f = m.querySelector("input:not([type=file]):not([type=radio]),select,textarea"); if (f && window.innerWidth>700) f.focus(); }
 function closeModal(){ const m = $("#modal"); m.hidden = true; m.innerHTML = ""; S.modal = null; S.armed = null; S.pendingFile = null; }
 const fld = (id, label, val, type="text", extra="") => `<div class="f ${extra.includes("full")?"full":""}"><label for="${id}">${label}</label><input id="${id}" name="${id}" type="${type}" value="${esc(val??"")}" ${type==="number"?'step="0.01" min="0" inputmode="decimal"':""} ${extra.includes("req")?"required":""}></div>`;
 const hdr = t => `<header><h2>${t}</h2><button class="btn ghost" type="button" data-act="close" aria-label="Cerrar">✕</button></header>`;
@@ -1037,8 +1062,29 @@ function tripForm(v){
     <div class="f chk" style="align-self:end"><input type="checkbox" id="espana" name="espana" ${v.espana?"checked":""}><label for="espana">Viaje en España (facturas con IVA)</label></div>
     ${fld("inicio","Fecha de inicio",v.inicio,"date")}${fld("fin","Fecha de fin",v.fin,"date")}
     <div class="f full"><label for="notas">Notas (opcional)</label><input id="notas" name="notas" value="${esc(v.notas||"")}" placeholder="Ej. Grupo de 14 + 2 guías"></div>
-    <div class="f full"><label for="paginaClientes">Enlace a la página de clientes (opcional)</label><input id="paginaClientes" name="paginaClientes" type="url" value="${esc(v.paginaClientes||"")}" placeholder="https://claude.ai/artifact/..."></div>
+    ${S.teamCache && S.teamCache.some(t=>t.rol==="guia")?`<div class="f full"><label>Guías con acceso a este viaje</label><div class="pillset" style="--sec:var(--accent);--sec-bg:var(--sunk)">${S.teamCache.filter(t=>t.rol==="guia").map(t=>`<label><input type="checkbox" class="g-chk" value="${esc(t.email)}" ${(v.guias||[]).includes(t.email)?"checked":""}>${esc(t.nombre||t.email)}</label>`).join("")}</div></div>`:(window.TBX_TEAM?`<p class="hint" style="grid-column:1/-1;margin:0">Para dar acceso a guías, añádelos primero en «Equipo y accesos».</p>`:"")}
+    <div class="f full"><label for="paginaClientes">Enlace a la página de clientes (opcional)</label><input id="paginaClientes" name="paginaClientes" type="text" inputmode="url" value="${esc(v.paginaClientes||"")}" placeholder="Ej. ../viajes/dolomitas-2026/ o https://..."></div>
     <footer>${v.id?delBtn("trip","Borrar viaje"):""}<button type="button" class="btn" data-act="close">Cancelar</button><button class="btn pri" type="submit">Guardar</button></footer>
+  </form>`);
+}
+const teamName = email => { const t = (S.teamCache||[]).find(x => x.email===email); return (t && (t.nombre||t.email)) || email; };
+async function loadTeam(){ if (!window.TBX_TEAM || !isAdmin()) return []; try { S.teamCache = await window.TBX_TEAM.list(); } catch(e){ console.warn(e); } return S.teamCache||[]; }
+function teamForm(){
+  const me = (window.TBX_ME||{}).email;
+  const list = S.teamCache || [];
+  const tripsOf = email => S.viajes.filter(v => (v.guias||[]).includes(email)).map(v => v.nombre);
+  S.modal = {kind:"team"};
+  openModal(hdr("Equipo y accesos") + `<form id="frm">
+    <p class="hint" style="grid-column:1/-1;margin:0">Los <b>guías</b> solo ven los viajes que les asignes (en «Editar viaje») y no ven lo que pagan los clientes ni los balances. El <b>administrador</b> lo ve todo.</p>
+    <div class="f full" style="gap:8px">${list.map(t => `<div class="team-row"><div class="who"><b>${esc(t.nombre||t.email)}</b><span class="hint">${esc(t.email)}${t.rol==="guia"?` · ${tripsOf(t.email).length?esc(tripsOf(t.email).join(", ")):"sin viajes asignados"}`:""}</span></div>
+      <span class="chip ${t.rol==="admin"?"okc":"trek"}">${t.rol==="admin"?"Administrador":"Guía"}</span>
+      ${t.email===me?'<span class="hint">Tú</span>':`<button type="button" class="btn sm danger ${S.armed==="tm"+t.email?"armed":""}" data-act="teamDel" data-e="${esc(t.email)}">${S.armed==="tm"+t.email?"¿Quitar acceso?":"Quitar"}</button>`}</div>`).join("") || '<p class="hint">Cargando…</p>'}</div>
+    <h3 style="grid-column:1/-1;font-size:17px;text-transform:uppercase;margin-top:6px">Añadir persona</h3>
+    ${fld("t-nombre","Nombre","","text")}
+    <div class="f"><label for="t-rol">Rol</label><select id="t-rol"><option value="guia">Guía</option><option value="admin">Administrador</option></select></div>
+    ${fld("t-email","Email","","email","full")}
+    <p class="hint" style="grid-column:1/-1;margin:0">Después dile que entre en <b>${esc(location.origin + location.pathname)}</b>, escriba su email y una contraseña nueva y pulse «Primera vez: crear mi contraseña».</p>
+    <footer><button type="button" class="btn" data-act="close">Cerrar</button><button class="btn pri" type="submit">Añadir al equipo</button></footer>
   </form>`);
 }
 function hotelForm(h){
@@ -1102,6 +1148,7 @@ function gastoForm(g){
     <div class="f"><label for="g-metodo">Método de pago</label><input id="g-metodo" list="dl-gmet" value="${esc(g.metodo||"")}"></div>
     ${fld("g-por","Pagado por",g.pagadoPor)}
     <div class="f full"><label for="g-notas">Notas</label><input id="g-notas" value="${esc(g.notas||"")}"></div>
+    ${isAdmin()?`<div class="f full chk"><input type="checkbox" id="g-solo" ${g.soloAdmin?"checked":""}><label for="g-solo">Solo visible para el administrador (no lo verán los guías)</label></div>`:""}
     <datalist id="dl-gmet"><option>Tarjeta empresa</option><option>Efectivo</option><option>Tarjeta del guía</option><option>Transferencia</option></datalist>
     <footer>${!isNew?delBtn("gasto","Borrar"):""}<button type="button" class="btn" data-act="close">Cancelar</button><button class="btn pri" type="submit" id="g-save">Guardar gasto</button></footer>
   </form>`, "gastos");
@@ -1132,7 +1179,7 @@ function clientForm(c){
     <p class="hint" style="grid-column:1/-1;margin:0">Si viajan juntos (pareja, familia), poned el mismo número de etiqueta: en el List Room irán en una sola tarjeta y se sumarán sus maletas.</p>
     ${fld("nombre","Nombre y apellidos",c.nombre,"text","full req")}
     ${fld("telefono","Teléfono",c.telefono,"tel")}${fld("email","Email",c.email,"email")}
-    ${fld("precio","Precio del viaje (€)",c.precio,"number")}
+    ${isAdmin()?fld("precio","Precio del viaje (€)",c.precio,"number"):""}
     <div class="f"><label>Pagado</label><div style="padding:8px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">${c.id?`${payChip(c)}<button type="button" class="btn sm" data-act="pagos" data-id="${esc(c.id)}">Pagos</button>`:'<span class="hint">Guarda el cliente y luego añade sus pagos.</span>'}</div></div>
     <div class="f full"><label for="notas">Notas</label><input id="notas" name="notas" value="${esc(c.notas||"")}" placeholder="Ej. Alergia al gluten, bici eléctrica talla M"></div>
     <div class="f full chk"><input type="checkbox" id="guia" name="guia" ${c.guia?"checked":""}><label for="guia">Es guía de Travel Bikex (solo para su documentación: no cuenta en List Room ni en Balance)</label></div>
@@ -1145,6 +1192,7 @@ function pagosForm(cid){
   const ps = pagosOf(c), cob = cobradoOf(c), precio = +c.precio||0, falta = Math.max(0, precio-cob);
   S.modal = {kind:"pagos", id:cid};
   openModal(hdr(`Pagos · ${esc(c.nombre)}`) + `<form id="frm">
+    ${c.notaAdmin?`<p class="hint" style="grid-column:1/-1;margin:0">${esc(c.notaAdmin)}</p>`:""}
     <div class="calc"><span>Precio ${precio?money(precio):"sin indicar"}</span><span class="ok">Pagado ${money(cob)}</span>${precio?(falta>0.005?`<span class="pend">Falta ${money(falta)}</span>`:'<span class="ok">Pagado por completo</span>'):""}</div>
     <div class="f full"><div style="display:flex;flex-direction:column;gap:6px">
       ${ps.map(p => `<div class="item" style="padding:8px 12px"><span class="num" style="font-weight:700;min-width:90px">${money(p.importe)}</span>
@@ -1175,6 +1223,7 @@ async function submitForm(form){
       if (!fd.nombre.trim()) return toast("Pon un nombre al viaje.");
       if (fd.inicio && fd.fin && fd.fin < fd.inicio) return toast("La fecha de fin es anterior a la de inicio.");
       const data = {nombre:fd.nombre.trim(), tipo:fd.tipo, espana:!!fd.espana, inicio:fd.inicio||"", fin:fd.fin||"", notas:fd.notas||"", paginaClientes:(fd.paginaClientes||"").trim()};
+      if (S.teamCache) data.guias = [...form.querySelectorAll(".g-chk:checked")].map(x => x.value);
       if (m.id) { await S.db.doc("viajes/"+m.id).update(data); toast("Viaje guardado"); }
       else { data.creado = new Date().toISOString(); const ref = await S.db.collection("viajes").add(data); closeModal(); openTrip(ref.id); toast("Viaje creado"); return; }
     } else if (m.kind === "hotel"){
@@ -1185,15 +1234,17 @@ async function submitForm(form){
     } else if (m.kind === "client"){
       if (!fd.nombre.trim()) return toast("Escribe el nombre del cliente.");
       const num = parseInt(fd.num,10)||0;
-      const data = {num, nombre:fd.nombre.trim(), maletas:parseInt(fd.maletas,10)||0, telefono:fd.telefono, email:fd.email, notas:fd.notas, precio:+fd.precio||0, guia:!!fd.guia};
+      const data = {num, nombre:fd.nombre.trim(), maletas:parseInt(fd.maletas,10)||0, telefono:fd.telefono, email:fd.email, notas:fd.notas, guia:!!fd.guia};
       const col = S.db.collection(`viajes/${S.vid}/clientes`);
-      if (m.id) await col.doc(m.id).update(data); else await col.add({...data, docs:[]});
+      let cid = m.id;
+      if (m.id) await col.doc(m.id).update(data); else cid = (await col.add({...data, docs:[]})).id;
+      await mutateDoc(finPath(cid), cur => ({...cur, precio:+fd.precio||0}));
       toast("Cliente guardado");
     } else if (m.kind === "pagos"){
       const importe = r2(val("p-importe")); if (!(importe > 0)) return toast("Escribe el importe del pago.");
       const pago = {id:Date.now().toString(36)+Math.random().toString(36).slice(2,5), fecha:val("p-fecha"), importe, metodo:val("p-metodo").trim(), nota:val("p-nota").trim()};
       const cid = m.id;
-      await mutateDoc(`viajes/${S.vid}/clientes/${cid}`, cur => {
+      await mutateDoc(finPath(cid), cur => {
         const pagos = [...(cur.pagos||[])];
         if (!pagos.length && +cur.cobrado) pagos.push({id:"ant", fecha:"", importe:+cur.cobrado, metodo:"", nota:"Pagado antes de usar el registro de pagos"});
         pagos.push(pago);
@@ -1201,6 +1252,10 @@ async function submitForm(form){
       });
       toast("Pago apuntado"); setTimeout(()=>{ if (S.modal && S.modal.kind==="pagos") pagosForm(cid); }, 150);
       return;
+    } else if (m.kind === "team"){
+      const email = val("t-email").trim().toLowerCase(); if (!email) return toast("Escribe el email.");
+      await window.TBX_TEAM.save({email, nombre:val("t-nombre"), rol:val("t-rol")});
+      await loadTeam(); toast("Añadido al equipo"); teamForm(); return;
     } else if (m.kind === "etapa"){
       const keys = ["titulo","salida","llegada","km","desnivel","hora","enlaces","descripcion","paradas","alertas","briefing"];
       const patch = {enlace:""}; keys.forEach(k => patch[k] = (fd[k]||"").trim());
@@ -1213,7 +1268,8 @@ async function submitForm(form){
       if (S.pendingFile){ try { foto = await uploadFile(S.pendingFile); } catch(e){ upErr(e, "La foto"); btn.disabled=false; btn.textContent="Guardar gasto"; return; } }
       const tipo = (form.querySelector("input[name=tipo]:checked")||{}).value || "ticket";
       const data = {fecha:val("g-fecha"), categoria:val("g-cat")||"otros", tipo, iva: tipo==="factura" ? +val("g-iva") : 0, total:r2(total),
-        concepto:val("g-concepto").trim(), metodo:val("g-metodo").trim(), pagadoPor:val("g-por").trim(), notas:val("g-notas").trim(), foto:foto||null};
+        concepto:val("g-concepto").trim(), metodo:val("g-metodo").trim(), pagadoPor:val("g-por").trim(), notas:val("g-notas").trim(), foto:foto||null,
+        soloAdmin: isAdmin() ? !!($("#g-solo") && $("#g-solo").checked) : false};
       const col = S.db.collection(`viajes/${S.vid}/gastos`);
       if (m.id) { const old = S.gastos.find(x=>x.id===m.id); await col.doc(m.id).set({...data, creado:(old&&old.creado)||new Date().toISOString()});
         if (old && old.foto && foto && old.foto.id !== foto.id && S.assets) S.assets.delete(old.foto.id).catch(()=>{}); }
@@ -1231,13 +1287,13 @@ async function doDelete(kind){
     if (kind==="trip"){
       const files = [...S.clientes.flatMap(c=>c.docs||[]), ...Object.values(S.etapas).flatMap(e=>e.files||[]), ...S.gastos.map(g=>g.foto).filter(Boolean)];
       for (const d of files) { try { if (S.assets) await S.assets.delete(d.id); } catch(e){} }
-      const sub = [["hoteles",S.hoteles.map(x=>x.id)],["clientes",S.clientes.map(x=>x.id)],["gastos",S.gastos.map(x=>x.id)],["rooming",Object.keys(S.rooming)],["etapas",Object.keys(S.etapas)],["compra",Object.keys(S.compra)]];
+      const sub = [["hoteles",S.hoteles.map(x=>x.id)],["clientes",S.clientes.map(x=>x.id)],["gastos",S.gastos.map(x=>x.id)],["rooming",Object.keys(S.rooming)],["etapas",Object.keys(S.etapas)],["compra",Object.keys(S.compra)],["finanzas",Object.keys(S.fin||{})]];
       for (const [c, ids] of sub) for (const x of ids) await S.db.doc(`${base}/${c}/${x}`).delete();
       await S.db.doc(base).delete();
       closeTrip(); try{localStorage.removeItem("tbx_vid");}catch(e){} S.general=null; renderAll(); toast("Viaje borrado");
     } else if (kind==="hotel"){ await S.db.doc(`${base}/hoteles/${id}`).delete(); toast("Hotel borrado"); }
     else if (kind==="client"){ const c=S.clientes.find(x=>x.id===id); for (const d of (c&&c.docs)||[]) { try{ if(S.assets) await S.assets.delete(d.id);}catch(e){} }
-      await S.db.doc(`${base}/clientes/${id}`).delete(); toast("Cliente borrado"); }
+      await S.db.doc(`${base}/clientes/${id}`).delete(); await S.db.doc(`${base}/finanzas/${id}`).delete().catch(()=>{}); toast("Cliente borrado"); }
     else if (kind==="gasto"){ const g=S.gastos.find(x=>x.id===id); if (g&&g.foto&&S.assets) S.assets.delete(g.foto.id).catch(()=>{});
       await S.db.doc(`${base}/gastos/${id}`).delete(); toast("Gasto borrado"); }
   } catch(e){ writeErr(e); }
@@ -1333,8 +1389,13 @@ document.addEventListener("click", async ev => {
   const b = ev.target.closest("[data-act]");
   if (!b) { if (ev.target.id==="modal") closeModal(); return; }
   const a = b.dataset.act;
-  if (a!=="del" && a!=="delFile" && a!=="delPago" && S.armed && !String(S.armed).startsWith("doc")) S.armed = null;
+  if (a!=="del" && a!=="delFile" && a!=="delPago" && a!=="teamDel" && S.armed && !String(S.armed).startsWith("doc")) S.armed = null;
+  const ADMIN_ACTS = ["newTrip","editTrip","general","reloadGen","genYear","newHotel","newClient","editEtapa","upload","delFile","cFirm","cUndo","cMarkSent","pagos","delPago","team","teamDel"];
+  if (!isAdmin() && (ADMIN_ACTS.includes(a) || (a==="del" && b.dataset.kind!=="gasto"))) { toast("Esto solo lo puede hacer el administrador."); return; }
   switch(a){
+    case "team": await loadTeam(); teamForm(); break;
+    case "teamDel": { const e = b.dataset.e, k = "tm"+e; if (S.armed!==k){ S.armed=k; teamForm(); break; } S.armed=null;
+      try { await window.TBX_TEAM.remove(e); await loadTeam(); toast("Acceso quitado"); teamForm(); } catch(err){ writeErr(err); } break; }
     case "open": openTrip(b.dataset.id); break;
     case "general": closeTrip(); S.view="general"; S.general=null; renderAll(); window.scrollTo(0,0); break;
     case "reloadGen": loadGeneral(); break;
@@ -1342,8 +1403,8 @@ document.addEventListener("click", async ev => {
     case "back": closeTrip(); S.view="trip"; try{localStorage.removeItem("tbx_vid");}catch(e){} renderAll(); break;
     case "tab": S.tab = b.dataset.t; try{localStorage.setItem("tbx_tab",S.tab);}catch(e){} renderMain(); break;
     case "day": S.day[b.dataset.k] = b.dataset.f; if (b.dataset.k==="room") S.lrMode="dia"; renderMain(); break;
-    case "newTrip": tripForm(null); break;
-    case "editTrip": tripForm(trip()); break;
+    case "newTrip": await loadTeam(); tripForm(null); break;
+    case "editTrip": await loadTeam(); tripForm(trip()); break;
     case "close": closeModal(); break;
     case "newHotel": hotelForm({fecha:b.dataset.f, grupo:b.dataset.g}); break;
     case "editHotel": hotelForm(S.hoteles.find(h=>h.id===b.dataset.id)||{}); break;
@@ -1371,7 +1432,7 @@ document.addEventListener("click", async ev => {
     case "delPago": { const k = "pay"+b.dataset.id, cid = S.modal && S.modal.id; if (!cid) break;
       if (S.armed !== k) { S.armed = k; b.classList.add("armed"); b.textContent = "¿Borrar?"; break; }
       S.armed = null;
-      mutateDoc(`viajes/${S.vid}/clientes/${cid}`, cur => { const pagos = (cur.pagos||[]).filter(p => p.id!==b.dataset.id); return {...cur, pagos, cobrado: r2(pagos.reduce((a,p)=>a+(+p.importe||0),0))}; })
+      mutateDoc(finPath(cid), cur => { const pagos = (cur.pagos||[]).filter(p => p.id!==b.dataset.id); return {...cur, pagos, cobrado: r2(pagos.reduce((a,p)=>a+(+p.importe||0),0))}; })
         .then(() => { toast("Pago borrado"); setTimeout(()=>{ if (S.modal && S.modal.kind==="pagos") pagosForm(cid); }, 150); }, writeErr);
       break; }
     case "copy": try { await navigator.clipboard.writeText(b.dataset.v); toast("Email copiado"); } catch(e){ const r=document.createRange(); r.selectNodeContents(b.previousElementSibling); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast("Email seleccionado: cópialo con el menú"); } break;
@@ -1392,7 +1453,7 @@ document.addEventListener("change", ev => {
   const t = ev.target;
   if (t.classList.contains("room-in")) { const g = tagGroups().find(x => x.key===t.dataset.g); if (g) { const r = roomOfG(t.dataset.f, g); const v = t.value.trim(); if ((r.hab||"") !== v) writeRoomG(t.dataset.f, g, {hab:v}); } }
   if (t.classList.contains("pay-in")) { const k = t.dataset.k; const val = k==="notaPago" ? t.value.trim() : r2(t.value);
-    S.db.doc(`viajes/${S.vid}/clientes/${t.dataset.cid}`).update({[k]:val}).catch(writeErr); }
+    mutateDoc(finPath(t.dataset.cid), cur => ({...cur, [k]:val})).catch(writeErr); }
   if (t.id === "sendDay") { S.sendDay = t.value; renderMain(); }
   if (t.id === "copyFrom" && t.value) { const src = ((S.compra[t.value]||{}).items)||[]; const f = S.day.com;
     mutateShop(f, it => { const have = new Set(it.map(x=>x.t.toLowerCase())); return [...it, ...src.filter(x=>!have.has(x.t.toLowerCase())).map(x=>({...x, id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), ok:false}))]; }).then(()=>toast("Lista copiada")); }
@@ -1417,6 +1478,7 @@ renderAll();
   if (!S.db) { setSync("off","Sin conexión"); renderAll(); return; }
   setSync("","Cargando…"); renderAll();
   subscribeTrips();
+  loadTeam().then(() => renderAll());
   window.claude.use("assets").then(a => { S.assets = a; renderMain(); });
   window.claude.use("downloads").then(d => { S.downloads = d; });
 })();
