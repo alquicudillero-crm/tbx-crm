@@ -953,8 +953,8 @@ function consentPanel(v, cl){
       <span class="num" style="font-size:20px;font-weight:600">${firm.length} / ${cl.length} firmados</span></div>
     <div class="bar ${firm.length<cl.length?"low":""}"><i style="width:${pct}%"></i></div>
     <div class="send-row"><span class="chip okc">${firm.length} firmados</span><span class="chip es">${env.length} enviados sin firmar</span><span class="chip">${sin.length} sin enviar</span>${noMail.length?`<span class="chip due" title="${esc(noMail.map(c=>c.nombre).join(", "))}">${noMail.length} sin email</span>`:""}</div>
-    <div class="send-row"><span class="label">Documento</span>${v.consentDoc?`<span class="doc"><a href="/_blob/${esc(v.consentDoc.id)}" target="_blank" rel="noopener">${esc(v.consentDoc.nombre)}</a></span>`:'<span class="nodoc">Todavía no has subido el documento</span>'}
-      ${S.assets?`<button class="btn sm" data-act="upload" data-kind="plantilla" data-id="x">${v.consentDoc?"Cambiar documento":"Subir documento (PDF)"}</button>`:""}</div>
+    <div class="send-row"><span class="label">Documento</span>${consentOf(v)?`<span class="doc"><a href="/_blob/${esc(consentOf(v).id)}" target="_blank" rel="noopener">${esc(consentOf(v).nombre)}</a></span>`:'<span class="nodoc">Todavía no has subido el documento</span>'}
+      ${S.assets?`<button class="btn sm" data-act="upload" data-kind="plantilla" data-id="x">${consentOf(v)?"Cambiar documento (para todos los viajes)":"Subir documento (PDF)"}</button>`:""}</div>
     ${emails.length?`<div class="send-row"><span class="label">Pendientes de firmar (${emails.length})</span><span class="mailbox"><span>${esc(emails.join(", "))}</span><button class="btn sm" data-act="copy" data-v="${esc(emails.join(", "))}">Copiar emails</button></span></div>
     <div class="send-row"><a class="btn pri" style="--sec:var(--ok)" href="${esc(href)}">Abrir email para todos (copia oculta)</a><button class="btn" data-act="cMarkSent">Marcar como enviado a ${pend.filter(c=>st(c)!=="enviado").length||pend.length}</button></div>`
       : `<div class="hint">${firm.length===cl.length?"Todos los clientes han firmado.":"No hay emails de clientes pendientes. Añádelos en «Editar» de cada cliente."}</div>`}
@@ -1183,7 +1183,7 @@ async function loadPend(){
       const ns = noches(v); const sinHotel = ns.filter(f => !hoteles.some(x => covers(x,f) && x.grupo==="clientes"));
       if (sinHotel.length) items.push({sev, tab:"hoteles", txt:`${sinHotel.length} noche${sinHotel.length>1?"s":""} sin hotel de clientes`, sub: sinHotel.slice(0,4).map(f => fD.format(parse(f))).join(", ")});
       cls.filter(x => (+x.precio||0) - cobradoOf(x) > 0.005).forEach(x => items.push({sev: soon && n <= 30 ? "alta" : "media", tab:"balance", txt:`${x.nombre}: le faltan ${money((+x.precio||0) - cobradoOf(x))}`, sub:"Pago del cliente"}));
-      if (cls.length && !v.consentDoc) items.push({sev:"media", tab:"clientes", txt:"Falta subir el documento de consentimiento"});
+      if (cls.length && !consentOf(v)) items.push({sev:"media", tab:"clientes", txt:"Falta subir el documento de consentimiento"});
       const noFirm = cls.filter(x => ((x.consent||{}).estado||"") !== "firmado");
       if (noFirm.length) items.push({sev, tab:"clientes", txt:`${noFirm.length} cliente${noFirm.length>1?"s":""} sin consentimiento firmado`, sub: noFirm.slice(0,5).map(x => x.nombre).join(", ") + (noFirm.length>5?"…":"")});
       const noMail = cls.filter(x => !(x.email||"").trim());
@@ -1428,7 +1428,7 @@ function publicoForm(){
     ${ta("p-practica","Información práctica",p.practica,"Seguro, clima, moneda, teléfonos…")}
     ${fld("p-contacto","Contacto durante el viaje",p.contacto,"text","full")}
     <div class="f full chk"><input type="checkbox" id="p-insc" name="p-insc" ${p.inscripcion?"checked":""}><label for="p-insc">Inscripción online abierta: los clientes rellenan sus datos, suben su DNI o pasaporte, sus medidas para la bici y firman el consentimiento en pantalla</label></div>
-    ${v.consentDoc?"":'<p class="hint" style="grid-column:1/-1;margin:0;color:var(--due)">Aún no has subido el documento de consentimiento (pestaña Clientes): la inscripción se firmará sin poder leerlo.</p>'}
+    ${consentOf(v)?"":'<p class="hint" style="grid-column:1/-1;margin:0;color:var(--due)">Aún no has subido el documento de consentimiento (pestaña Clientes): la inscripción se firmará sin poder leerlo.</p>'}
     <footer>${p.publicado?'<button type="button" class="btn danger left" data-act="unpublish">Despublicar</button>':""}<button type="button" class="btn" data-act="close">Cancelar</button><button class="btn pri" type="submit">${p.publicado?"Guardar y actualizar":"Publicar"}</button></footer>
   </form>`, "etapas");
 }
@@ -1455,7 +1455,7 @@ async function publicar(cfg){
       descripcion:e.descripcion||"", paradas:e.paradas||"", puntoEncuentro:e.puntoEncuentro||"", duracion:e.duracion||"", propuestas:e.propuestas||"", tracks});
   }
   let consent = null;
-  if (v.consentDoc){ try { const res = await fetch("/_blob/" + v.consentDoc.id); if (!res.ok) throw new Error("sin consentimiento"); const blob = await res.blob(); consent = await P.upload(`${sg}/consentimiento.pdf`, blob, "application/pdf"); } catch(err){ console.warn(err); } }
+  if (consentOf(v)){ try { const res = await fetch("/_blob/" + consentOf(v).id); if (!res.ok) throw new Error("sin consentimiento"); const blob = await res.blob(); consent = await P.upload(`${sg}/consentimiento.pdf`, blob, "application/pdf"); } catch(err){ console.warn(err); } }
   const hoteles = S.hoteles.filter(h => h.grupo==="clientes" && h.fecha).sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(h => ({fecha:h.fecha, noches:nNoches(h), nombre:h.nombre||"", ciudad:h.ciudad||"", direccion:h.direccion||""}));
   const data = {nombre:v.nombre, tipo:v.tipo||"", inicio:v.inicio||"", fin:v.fin||"", rango:rangeTxt(v), intro:cfg.intro, encuentro:cfg.encuentro, incluye:cfg.incluye, noincluye:cfg.noincluye, llevar:cfg.llevar, practica:cfg.practica, contacto:cfg.contacto,
     dias:out, hoteles, consentimiento:consent, bicis: v.tipo !== "trek", publicado:new Date().toISOString()};
@@ -1492,7 +1492,7 @@ function inscPanel(v){
 async function firmaPdf(v, d){
   const {PDFDocument, rgb, StandardFonts} = PDFLib;
   let pdf;
-  if (v.consentDoc){ try { pdf = await PDFDocument.load(await (await fetch("/_blob/" + v.consentDoc.id)).arrayBuffer(), {ignoreEncryption:true}); } catch(e){ console.warn(e); } }
+  if (consentOf(v)){ try { pdf = await PDFDocument.load(await (await fetch("/_blob/" + consentOf(v).id)).arrayBuffer(), {ignoreEncryption:true}); } catch(e){ console.warn(e); } }
   if (!pdf) pdf = await PDFDocument.create();
   const fR = await pdf.embedFont(StandardFonts.Helvetica), fB = await pdf.embedFont(StandardFonts.HelveticaBold);
   const clean = t => String(t ?? "").replace(/[^\x20-\x7E -ÿ€–—‘’“”•…]/g, "");
@@ -1871,6 +1871,14 @@ async function facturaPdf(f){
   return new Blob([await pdf.save()], {type:"application/pdf"});
 }
 
+/* ===== CONSENTIMIENTO ÚNICO PARA TODOS LOS VIAJES ===== */
+const consentOf = v => (v && v.consentDoc) || S.consentGlobal || null;
+async function loadConsentGlobal(){ if (!isAdmin()) return; try { const d = await S.db.doc("contacfg/consentimiento").get(); if (d.exists) S.consentGlobal = d.data().doc || null; } catch(e){} }
+async function guardarConsentGlobal(doc){
+  await S.db.doc("contacfg/consentimiento").set({doc, actualizado:new Date().toISOString()});
+  S.consentGlobal = doc;
+  for (const v of S.viajes) await S.db.doc("viajes/"+v.id).update({consentDoc:doc});
+}
 /* ===== VIAJES MODELO Y CAMBIO DE FECHAS ===== */
 async function loadPlantillas(){ if (S.plantillas) return; try { S.plantillas = await (await fetch("../plantillas/index.json", {cache:"no-store"})).json(); } catch(e){ S.plantillas = []; } }
 async function crearDesdePlantilla(vid, inicio, tpl){
@@ -2125,6 +2133,7 @@ async function submitForm(form){
           data.fin = addDays(data.inicio, tpl.dias - 1); data.tipo = tpl.tipo || data.tipo; if (!data.notas) data.notas = tpl.notas || "";
           if (tpl.publico) data.publico = {...tpl.publico, publicado:false};
         }
+        if (S.consentGlobal) data.consentDoc = S.consentGlobal;
         const ref = await S.db.collection("viajes").add(data);
         if (tpl) { toast("Creando el programa…"); await crearDesdePlantilla(ref.id, data.inicio, tpl); }
         closeModal(); openTrip(ref.id); toast(tpl ? "Viaje creado con su programa y hoteles" : "Viaje creado"); return;
@@ -2253,7 +2262,7 @@ $("#filepick").addEventListener("change", async ev => {
   const added = [];
   for (const f of files){ try { added.push(tgt.kind==="track" ? await uploadTrack(f) : await uploadFile(f)); } catch(e){ upErr(e, f.name); } }
   if (!added.length) return;
-  if (tgt.kind==="plantilla"){ S.db.doc(`viajes/${S.vid}`).update({consentDoc:added[0]}).then(()=>toast("Documento de consentimiento guardado"), writeErr); return; }
+  if (tgt.kind==="plantilla"){ guardarConsentGlobal({...added[0], nombre:"CONSENTIMIENTO.pdf"}).then(()=>toast("Documento CONSENTIMIENTO guardado para todos los viajes"), writeErr); return; }
   if (tgt.kind==="firmado"){ mutateDoc(`viajes/${S.vid}/clientes/${tgt.id}`, cur => ({...cur, consent:{...(cur.consent||{}), estado:"firmado", firmado:todayIso, doc:added[0]}})).then(()=>toast("Consentimiento firmado guardado"), writeErr); return; }
   const path = tgt.kind==="cliente" ? `viajes/${S.vid}/clientes/${tgt.id}` : `viajes/${S.vid}/etapas/${tgt.id}`;
   const field = {cliente:"docs", etapa:"files", track:"tracks"}[tgt.kind];
@@ -2457,7 +2466,7 @@ renderAll();
   S.db = await window.claude.use("db");
   if (!S.db) { setSync("off","Sin conexión"); renderAll(); return; }
   setSync("","Cargando…"); renderAll();
-  subscribeTrips();
+  subscribeTrips(); loadConsentGlobal();
   loadTeam().then(() => renderAll());
   window.claude.use("assets").then(a => { S.assets = a; renderMain(); });
   window.claude.use("downloads").then(d => { S.downloads = d; });
