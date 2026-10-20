@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Travel Bikex · Viaje</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Public+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../pub.css">
+</head>
+<body>
+<header class="top"><img src="../img/logo-tbx.jpg" alt="Travel Bikex"><a href="https://travelbikex.es/">travelbikex.es</a></header>
+<main id="app"><div class="msg"><p>Cargando el viaje…</p></div></main>
+<footer class="foot">TRAVEL BIKEX · TBX Eventos y Actividades Deportivas S.L.U. · Cercedilla (Madrid)</footer>
+<script src="../crm/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4"></script>
+<script>window.supabase || document.write('<script src="https://unpkg.com/@supabase/supabase-js@2.49.4"><\/script>')</script>
+<script>
+(async () => {
+  const app = document.getElementById("app");
+  const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const fail = (t, d) => { app.innerHTML = `<div class="msg"><h1>${esc(t)}</h1><p>${esc(d||"")}</p></div>`; };
+  const q = new URLSearchParams(location.search);
+  const slug = (q.get("v") || location.search.slice(1).split("&")[0] || "").toLowerCase();
+  if (!slug || !/^[a-z0-9-]+$/.test(slug)) return fail("Viaje no encontrado", "Revisa el enlace que te hemos enviado.");
+  if (!window.supabase || !window.TBX_CONFIG) return fail("Sin conexión", "No se pudo cargar la página. Comprueba tu conexión y recarga.");
+  const sb = window.supabase.createClient(TBX_CONFIG.supabaseUrl, TBX_CONFIG.supabaseAnonKey, {auth:{persistSession:false}});
+  const {data:row, error} = await sb.from("tbx_publico").select("slug,data,inscripcion").eq("slug", slug).maybeSingle();
+  if (error) return fail("Sin conexión", "No se pudo cargar el viaje. Inténtalo de nuevo en un rato.");
+  if (!row) return fail("Viaje no encontrado", "Este viaje ya no está publicado o el enlace no es correcto.");
+  const V = row.data || {};
+  document.title = `${V.nombre} · Travel Bikex`;
+  const parse = s => { const [y,m,d] = String(s).split("-").map(Number); return new Date(y, m-1, d); };
+  const fLong = new Intl.DateTimeFormat("es-ES", {weekday:"long", day:"numeric", month:"long"});
+  const fShort = new Intl.DateTimeFormat("es-ES", {day:"numeric", month:"short"});
+  const COL = {etapa:"var(--eta)", traslado:"var(--tra)", libre:"var(--lib)"};
+  const lines = t => String(t||"").split(/\n+/).map(x => x.replace(/^[-•*·]\s*/, "").trim()).filter(Boolean);
+  const list = t => `<ul>${lines(t).map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
+  const formUrl = `../inscripcion/?${slug}`;
+  const dias = (V.dias||[]).filter(d => d.titulo || d.descripcion || d.km || d.tracks.length || d.propuestas || d.puntoEncuentro);
+  const day = d => { const ruta = [d.salida, d.llegada].filter(Boolean).join(" → ");
+    return `<article class="day" style="--c:${COL[d.tipo]||COL.etapa}">
+      <div class="day-top"><span class="tag">Día ${d.n} · ${esc(d.tag)}</span><h3>${esc(d.titulo || d.tag)}</h3><span class="date">${esc(fLong.format(parse(d.fecha)))}</span></div>
+      <div class="day-body">
+        <div class="facts">${d.hora?`<span><small>${d.tipo==="traslado"?"Encuentro":"Salida"}</small><b>${esc(d.hora)}</b></span>`:""}${ruta?`<span><small>Ruta</small><b>${esc(ruta)}</b></span>`:""}
+          ${d.km?`<span><small>Distancia</small><b>${esc(d.km)} km</b></span>`:""}${d.desnivel?`<span><small>Desnivel +</small><b>${esc(d.desnivel)} m</b></span>`:""}
+          ${d.duracion?`<span><small>Duración</small><b>${esc(d.duracion)}</b></span>`:""}${d.puntoEncuentro?`<span><small>Punto de encuentro</small><b>${esc(d.puntoEncuentro)}</b></span>`:""}</div>
+        ${d.descripcion?`<p>${esc(d.descripcion)}</p>`:""}
+        ${d.paradas?`<div><div class="label">Paradas y avituallamiento</div><p>${esc(d.paradas)}</p></div>`:""}
+        ${d.propuestas?`<div><div class="label">Propuestas para el día</div><p>${esc(d.propuestas)}</p></div>`:""}
+        ${d.tracks.length?`<div class="profile" data-gpx="${esc((d.tracks.find(t => /\.gpx$/i.test(t.nombre))||{}).url||"")}" hidden></div>
+          <div class="dl">${d.tracks.map(t => `<a class="btn sm" href="${esc(t.url)}?download=${encodeURIComponent(t.nombre)}">Descargar ${esc(t.nombre)}</a>`).join("")}</div>`:""}
+      </div></article>`; };
+  const H = V.hoteles || [];
+  const info = [
+    V.encuentro ? `<div class="card full"><h3>Punto de encuentro</h3><p>${esc(V.encuentro)}</p></div>` : "",
+    V.incluye ? `<div class="card ok"><h3>Incluye</h3>${list(V.incluye)}</div>` : "",
+    V.noincluye ? `<div class="card no"><h3>No incluye</h3>${list(V.noincluye)}</div>` : "",
+    V.llevar ? `<div class="card"><h3>Qué llevar</h3>${list(V.llevar)}</div>` : "",
+    V.practica ? `<div class="card"><h3>Información práctica</h3><p>${esc(V.practica)}</p></div>` : "",
+    V.contacto ? `<div class="card"><h3>Contacto durante el viaje</h3><p>${esc(V.contacto)}</p></div>` : "",
+    V.consentimiento ? `<div class="card"><h3>Documentos</h3><p><a href="${esc(V.consentimiento)}" target="_blank" rel="noopener">Bases y consentimiento del viaje (PDF)</a></p></div>` : ""
+  ].join("");
+  app.innerHTML = `
+    <div class="hero"><div class="wrap">
+      <span class="kicker">${V.tipo==="trek"?"Trekking":V.tipo==="bici"?"Cicloturismo":"Viaje"}</span>
+      <h1>${esc(V.nombre)}</h1><div class="dates">${esc(V.rango)}</div>
+      ${V.intro?`<p>${esc(V.intro)}</p>`:""}
+      ${row.inscripcion?`<p style="margin-top:18px"><a class="btn lime" href="${formUrl}">Inscribirme en el viaje</a></p>`:""}
+    </div></div>
+    <nav class="nav"><div class="wrap">${dias.length?'<a href="#programa">Programa</a>':""}${H.length?'<a href="#hoteles">Hoteles</a>':""}${info?'<a href="#info">Información</a>':""}${row.inscripcion?'<a href="'+formUrl+'">Inscripción</a>':""}</div></nav>
+    ${dias.length?`<section id="programa"><div class="wrap"><h2>Programa día a día</h2>${dias.map(day).join("")}</div></section>`:""}
+    ${H.length?`<section id="hoteles"><div class="wrap"><h2>Alojamientos</h2><div class="card">${H.map(h => `<div class="hotel"><span class="when">${esc(fShort.format(parse(h.fecha)))} · ${h.noches} noche${h.noches>1?"s":""}</span><div><b>${esc(h.nombre)}</b><span class="hint">${esc(h.direccion||h.ciudad)}</span></div></div>`).join("")}</div></div></section>`:""}
+    ${info?`<section id="info"><div class="wrap"><h2>Información</h2><div class="grid2">${info}</div>
+      ${row.inscripcion?`<div class="cta"><div><h3>¿Te vienes?</h3><span>Rellena tus datos, sube tu documentación y firma el consentimiento online.</span></div><a class="btn lime" href="${formUrl}">Inscribirme</a></div>`:""}</div></section>`:""}`;
+  // perfiles de altitud a partir del GPX
+  const hav = (a, b) => { const R = 6371, r = Math.PI/180, dLa = (b[0]-a[0])*r, dLo = (b[1]-a[1])*r; const h = Math.sin(dLa/2)**2 + Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(h)); };
+  for (const el of document.querySelectorAll(".profile[data-gpx]")) {
+    const url = el.dataset.gpx; if (!url) continue;
+    try {
+      const xml = new DOMParser().parseFromString(await (await fetch(url)).text(), "application/xml");
+      const pts = [...xml.querySelectorAll("trkpt,rtept")].map(p => [+p.getAttribute("lat"), +p.getAttribute("lon"), +((p.querySelector("ele")||{}).textContent)]).filter(p => !isNaN(p[2]) && p[2] !== 0);
+      if (pts.length < 2) continue;
+      let dist = 0; const xy = [[0, pts[0][2]]];
+      for (let i = 1; i < pts.length; i++) { dist += hav(pts[i-1], pts[i]); xy.push([dist, pts[i][2]]); }
+      const step = Math.max(1, Math.floor(xy.length / 400)); const s = xy.filter((_, i) => i % step === 0);
+      const min = Math.min(...s.map(p => p[1])), max = Math.max(...s.map(p => p[1])), W = 600, Hh = 130, pad = 4;
+      const X = d => pad + d / dist * (W - 2*pad), Y = e => Hh - pad - (e - min) / Math.max(1, max - min) * (Hh - 2*pad - 10);
+      const path = s.map((p, i) => `${i?"L":"M"}${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join("");
+      el.innerHTML = `<div class="label">Perfil</div><svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Perfil de altitud, de ${Math.round(min)} a ${Math.round(max)} metros"><path d="${path}L${X(dist).toFixed(1)},${Hh}L${pad},${Hh}Z" fill="var(--green-bg)"/><path d="${path}" fill="none" stroke="var(--green)" stroke-width="2.2" stroke-linejoin="round"/></svg>
+        <div class="meta"><span>${dist.toFixed(1)} km</span><span>mín. ${Math.round(min)} m · máx. ${Math.round(max)} m</span></div>`;
+      el.hidden = false;
+    } catch (e) { console.warn(e); }
+  }
+})();
+</script>
+</body>
+</html>

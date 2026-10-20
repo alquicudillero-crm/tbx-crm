@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inscripción · Travel Bikex</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Public+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../pub.css">
+</head>
+<body>
+<header class="top"><img src="../img/logo-tbx.jpg" alt="Travel Bikex"><a id="back" href="#">Ver el viaje</a></header>
+<main class="wrap" id="app"><div class="msg"><p>Cargando…</p></div></main>
+<footer class="foot">TRAVEL BIKEX · TBX Eventos y Actividades Deportivas S.L.U. · Cercedilla (Madrid)</footer>
+<script src="../crm/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4"></script>
+<script>window.supabase || document.write('<script src="https://unpkg.com/@supabase/supabase-js@2.49.4"><\/script>')</script>
+<script>
+(async () => {
+  const app = document.getElementById("app"), $ = s => document.querySelector(s);
+  const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const fail = (t, d) => { app.innerHTML = `<div class="msg"><h1>${esc(t)}</h1><p>${d||""}</p></div>`; };
+  const q = new URLSearchParams(location.search);
+  const slug = (q.get("v") || location.search.slice(1).split("&")[0] || "").toLowerCase();
+  $("#back").href = `../viaje/?${slug}`;
+  if (!slug || !/^[a-z0-9-]+$/.test(slug)) return fail("Enlace no válido", "Revisa el enlace que te hemos enviado.");
+  if (!window.supabase || !window.TBX_CONFIG) return fail("Sin conexión", "No se pudo cargar el formulario. Comprueba tu conexión y recarga.");
+  const sb = window.supabase.createClient(TBX_CONFIG.supabaseUrl, TBX_CONFIG.supabaseAnonKey, {auth:{persistSession:false}});
+  const {data:row, error} = await sb.from("tbx_publico").select("slug,data,inscripcion").eq("slug", slug).maybeSingle();
+  if (error) return fail("Sin conexión", "No se pudo cargar el formulario. Inténtalo de nuevo en un rato.");
+  if (!row) return fail("Viaje no encontrado", "Este viaje ya no está publicado o el enlace no es correcto.");
+  const V = row.data || {};
+  document.title = `Inscripción · ${V.nombre}`;
+  if (!row.inscripcion) return fail("Inscripción cerrada", `La inscripción online de <b>${esc(V.nombre)}</b> está cerrada. Si tienes dudas, escríbenos.<br><br><a class="btn" href="../viaje/?${slug}">Ver el viaje</a>`);
+  const ACEPTA = [
+    V.consentimiento ? "He leído y acepto las bases y el documento de consentimiento del viaje." : "Acepto las bases y las condiciones del viaje que me ha facilitado Travel Bikex.",
+    "Declaro estar en condiciones físicas adecuadas para realizar la actividad y asumo los riesgos propios de la misma.",
+    "Acepto que TBX Eventos y Actividades Deportivas S.L.U. trate mis datos para gestionar el viaje (hoteles, seguros y alquiler de material)."
+  ];
+  const bicis = V.bicis !== false;
+  const pills = (name, opts, req) => `<div class="pills">${opts.map((o, i) => `<label><input type="radio" name="${name}" value="${esc(o)}" ${req&&i===0?"required":""}><span>${esc(o)}</span></label>`).join("")}</div>`;
+  app.innerHTML = `
+    <div style="padding:26px 0 0"><span class="label">Inscripción</span><h1 style="font-size:clamp(32px,7vw,48px);text-transform:uppercase">${esc(V.nombre)}</h1><p class="hint" style="font-size:16px;margin:4px 0 0">${esc(V.rango||"")}</p></div>
+    <form class="form" id="frm" novalidate>
+      <h2>Tus datos</h2>
+      <div class="f full"><label for="nombre">Nombre y apellidos <span class="req">*</span></label><input id="nombre" autocomplete="name" required></div>
+      <div class="f"><label for="email">Email <span class="req">*</span></label><input id="email" type="email" autocomplete="email" required></div>
+      <div class="f"><label for="telefono">Teléfono móvil <span class="req">*</span></label><input id="telefono" type="tel" autocomplete="tel" required></div>
+      <div class="f"><label for="documento">DNI o pasaporte (número) <span class="req">*</span></label><input id="documento" required></div>
+      <div class="f"><label for="nacimiento">Fecha de nacimiento</label><input id="nacimiento" type="date"></div>
+      <div class="f full"><label for="archivos">Foto o PDF de tu DNI o pasaporte <span class="req">*</span></label><input id="archivos" type="file" accept="image/*,application/pdf" multiple>
+        <span class="hint">Por las dos caras si es el DNI. Los hoteles lo piden a la llegada. Solo lo verá Travel Bikex.</span><div class="files" id="fileList"></div></div>
+      <h2>Alojamiento</h2>
+      <div class="f full"><label>Tipo de habitación</label>${pills("tipoHab", ["Doble","Twin","Individual"])}</div>
+      <div class="f full"><label for="compartida">Comparto habitación con</label><input id="compartida" placeholder="Nombre y apellidos de tu acompañante, si lo hay"></div>
+      <div class="f full"><label for="alergias">Alergias, intolerancias o dieta</label><input id="alergias" placeholder="Ej. celiaquía, vegetariano… o déjalo en blanco"></div>
+      <div class="f"><label for="emNombre">Contacto de emergencia <span class="req">*</span></label><input id="emNombre" placeholder="Nombre" required></div>
+      <div class="f"><label for="emTel">Teléfono de emergencia <span class="req">*</span></label><input id="emTel" type="tel" required></div>
+      ${bicis ? `<h2>Bicicleta</h2>
+      <div class="f full"><label>¿Necesitas bici de alquiler?</label>${pills("bici", ["Sí, alquilo bici","No, llevo la mía"])}</div>
+      <div class="f bici-x"><label for="bTipo">Tipo de bici</label><select id="bTipo"><option value="">—</option><option>Carretera</option><option>E-bike carretera</option><option>Gravel</option><option>E-gravel</option><option>MTB</option><option>E-MTB</option></select></div>
+      <div class="f bici-x"><label for="bPedales">Pedales</label><select id="bPedales"><option value="">—</option><option>Planos</option><option>SPD (MTB)</option><option>SPD-SL (Shimano carretera)</option><option>Look Keo</option><option>Llevo los míos</option></select></div>
+      <div class="f bici-x"><label for="bAltura">Tu altura (cm)</label><input id="bAltura" type="number" inputmode="numeric" min="120" max="220"></div>
+      <div class="f bici-x"><label for="bEntre">Entrepierna (cm)</label><input id="bEntre" type="number" inputmode="numeric" min="50" max="110"><span class="hint">Descalzo, de suelo a ingle.</span></div>
+      <div class="f bici-x"><label for="bTalla">Talla habitual (si la sabes)</label><input id="bTalla" placeholder="S, M, L, 54…"></div>
+      <div class="f bici-x"><label for="bPeso">Peso aproximado (kg)</label><input id="bPeso" type="number" inputmode="numeric"><span class="hint">Solo para e-bikes.</span></div>` : ""}
+      <div class="f full"><label for="comentarios">Comentarios</label><textarea id="comentarios" placeholder="Cualquier cosa que debamos saber"></textarea></div>
+      <h2>Consentimiento y firma</h2>
+      ${V.consentimiento ? `<p class="full" style="margin:0"><a class="btn" href="${esc(V.consentimiento)}" target="_blank" rel="noopener">Leer las bases y el consentimiento (PDF)</a></p>` : ""}
+      ${ACEPTA.map((t, i) => `<label class="chk full"><input type="checkbox" class="acepta" data-i="${i}"><span>${esc(t)}</span></label>`).join("")}
+      <div class="f full"><label>Firma <span class="req">*</span></label><canvas class="sig" id="sig" aria-label="Firma con el dedo o el ratón"></canvas>
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><span class="hint">Firma con el dedo o con el ratón dentro del recuadro.</span><button type="button" class="btn sm" id="sigClear">Borrar firma</button></div></div>
+      <div class="full" id="errBox"></div>
+      <div class="full"><button class="btn lime" type="submit" id="send" style="width:100%;padding:14px">Enviar inscripción</button></div>
+    </form>`;
+  // bici fields visibility
+  const syncBici = () => { const on = (document.querySelector("input[name=bici]:checked")||{}).value === "Sí, alquilo bici"; document.querySelectorAll(".bici-x").forEach(x => x.style.display = on ? "" : "none"); };
+  document.querySelectorAll("input[name=bici]").forEach(x => x.addEventListener("change", syncBici)); syncBici();
+  // files
+  let files = [];
+  const paint = () => { $("#fileList").innerHTML = files.map((f, i) => `<div><span>${esc(f.name)}</span><button type="button" class="btn sm" data-rm="${i}">Quitar</button></div>`).join(""); };
+  $("#archivos").addEventListener("change", e => { files = files.concat([...e.target.files]).slice(0, 4); e.target.value = ""; paint(); });
+  $("#fileList").addEventListener("click", e => { const i = e.target.dataset.rm; if (i != null) { files.splice(+i, 1); paint(); } });
+  // signature
+  const cv = $("#sig"), ctx = cv.getContext("2d"); let drawing = false, signed = false, last = null;
+  const fit = () => { const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1; const img = signed ? cv.toDataURL() : null; cv.width = r.width * d; cv.height = r.height * d; ctx.scale(d, d); ctx.lineWidth = 2.4; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#111";
+    if (img) { const im = new Image(); im.onload = () => ctx.drawImage(im, 0, 0, r.width, r.height); im.src = img; } };
+  fit(); window.addEventListener("resize", fit);
+  const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  cv.addEventListener("pointerdown", e => { drawing = true; last = pos(e); cv.setPointerCapture(e.pointerId); ctx.beginPath(); ctx.arc(last[0], last[1], 1.1, 0, 7); ctx.fillStyle = "#111"; ctx.fill(); signed = true; });
+  cv.addEventListener("pointermove", e => { if (!drawing) return; const p = pos(e); ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); last = p; signed = true; });
+  ["pointerup", "pointercancel", "pointerleave"].forEach(t => cv.addEventListener(t, () => drawing = false));
+  $("#sigClear").addEventListener("click", () => { ctx.clearRect(0, 0, cv.width, cv.height); signed = false; });
+  const sigPng = () => { // recorta y reduce la firma
+    const o = document.createElement("canvas"); const sc = Math.min(1, 600 / cv.width); o.width = Math.round(cv.width * sc); o.height = Math.round(cv.height * sc);
+    o.getContext("2d").drawImage(cv, 0, 0, o.width, o.height); return o.toDataURL("image/png"); };
+  const shrink = async f => {
+    if (!/^image\//.test(f.type) || !window.createImageBitmap) return f;
+    try { const bmp = await createImageBitmap(f); const sc = Math.min(1, 2000 / Math.max(bmp.width, bmp.height)); const c = document.createElement("canvas"); c.width = Math.round(bmp.width * sc); c.height = Math.round(bmp.height * sc);
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height); const b = await new Promise(r => c.toBlob(r, "image/jpeg", .85)); return new File([b], f.name.replace(/\.[^.]+$/, "") + ".jpg", {type:"image/jpeg"}); } catch (e) { return f; }
+  };
+  const val = id => ($("#" + id) ? $("#" + id).value.trim() : "");
+  const radio = n => (document.querySelector(`input[name=${n}]:checked`)||{}).value || "";
+  $("#frm").addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const errs = [];
+    if (!val("nombre")) errs.push("tu nombre"); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val("email"))) errs.push("un email válido");
+    if (!val("telefono")) errs.push("tu teléfono"); if (!val("documento")) errs.push("el número de DNI o pasaporte");
+    if (!files.length) errs.push("la foto de tu DNI o pasaporte"); if (!val("emNombre") || !val("emTel")) errs.push("un contacto de emergencia");
+    const ac = [...document.querySelectorAll(".acepta")]; if (ac.some(x => !x.checked)) errs.push("aceptar las tres casillas del consentimiento");
+    if (!signed) errs.push("tu firma");
+    const box = $("#errBox");
+    if (errs.length) { box.innerHTML = `<div class="err">Falta: ${esc(errs.join(", "))}.</div>`; box.scrollIntoView({behavior:"smooth", block:"center"}); return; }
+    box.innerHTML = ""; const btn = $("#send"); btn.disabled = true; btn.textContent = "Enviando…";
+    try {
+      const archivos = [];
+      for (const f0 of files) {
+        const f = await shrink(f0); const type = f.type || (/\.pdf$/i.test(f.name) ? "application/pdf" : "image/jpeg");
+        if (!/^(image\/(jpeg|png)|application\/pdf)$/.test(type)) throw new Error(`${f.name}: solo se admiten fotos (JPG, PNG) o PDF.`);
+        if (f.size > 10 * 1024 * 1024) throw new Error(`${f.name} pesa demasiado (máximo 10 MB).`);
+        const path = `${slug}/${(crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2))}.${type === "application/pdf" ? "pdf" : type === "image/png" ? "png" : "jpg"}`;
+        const {error} = await sb.storage.from("tbx-inscripciones").upload(path, f, {contentType:type, upsert:false});
+        if (error) throw new Error("No se pudo subir " + f.name + ".");
+        archivos.push({path, nombre:f0.name, tipo:type});
+      }
+      const alquila = radio("bici") === "Sí, alquilo bici", propia = radio("bici") === "No, llevo la mía";
+      const data = {nombre:val("nombre"), email:val("email").toLowerCase(), telefono:val("telefono"), documento:val("documento"), nacimiento:val("nacimiento"),
+        tipoHab:radio("tipoHab"), compartida:val("compartida"), alergias:val("alergias"), emergencia:`${val("emNombre")} · ${val("emTel")}`, comentarios:val("comentarios"),
+        bici: bicis ? {alquila, propia, tipo:alquila?val("bTipo"):"", pedales:alquila?val("bPedales"):"", altura:alquila?val("bAltura"):"", entrepierna:alquila?val("bEntre"):"", talla:alquila?val("bTalla"):"", peso:alquila?val("bPeso"):""} : null,
+        archivos, aceptaciones:ACEPTA, firma:sigPng(), firmadoEn:new Date().toISOString(), viaje:V.nombre};
+      const {error} = await sb.from("tbx_inscripciones").insert({slug, data});
+      if (error) throw new Error("No se pudo enviar la inscripción. Inténtalo de nuevo.");
+      window.scrollTo(0, 0);
+      app.innerHTML = `<div class="msg"><h1>¡Inscripción recibida!</h1><p>Gracias, ${esc(data.nombre.split(" ")[0])}. Hemos recibido tus datos, tu documentación y tu firma para <b>${esc(V.nombre)}</b>. Nos pondremos en contacto contigo.</p><p><a class="btn" href="../viaje/?${slug}">Volver al viaje</a></p></div>`;
+    } catch (e) { box.innerHTML = `<div class="err">${esc(e.message || "No se pudo enviar.")}</div>`; btn.disabled = false; btn.textContent = "Enviar inscripción"; }
+  });
+})();
+</script>
+</body>
+</html>

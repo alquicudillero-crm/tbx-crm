@@ -24,6 +24,7 @@
   --s-cli:#0b7f92; --s-cli-bg:#e0f5f8;
   --s-room:#d98a00; --s-room-bg:#fff4dc;
   --s-bal:#6741d9; --s-bal-bg:#efeaff;
+  --s-bic:#5c8a00; --s-bic-bg:#eef7d9;
   --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
   --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
@@ -37,7 +38,7 @@
   --s-hot:#8ea4ff; --s-hot-bg:#1c2448; --s-eta:#73d488; --s-eta-bg:#16301c;
   --s-gas:#ff9a5c; --s-gas-bg:#3a2214; --s-com:#ff7aa8; --s-com-bg:#3a1828;
   --s-cli:#5fd3e6; --s-cli-bg:#10313a; --s-room:#ffc24d; --s-room-bg:#382a0e;
-  --s-bal:#b39dff; --s-bal-bg:#271f45;
+  --s-bal:#b39dff; --s-bal-bg:#271f45; --s-bic:#b5d94a; --s-bic-bg:#25300f;
   --shadow:0 1px 2px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0f100e; --surface:#191b17; --sunk:#131512; --ink:#ebece8; --muted:#9ea398; --line:#2b2e28;
@@ -47,7 +48,7 @@
   --s-hot:#8ea4ff; --s-hot-bg:#1c2448; --s-eta:#73d488; --s-eta-bg:#16301c;
   --s-gas:#ff9a5c; --s-gas-bg:#3a2214; --s-com:#ff7aa8; --s-com-bg:#3a1828;
   --s-cli:#5fd3e6; --s-cli-bg:#10313a; --s-room:#ffc24d; --s-room-bg:#382a0e;
-  --s-bal:#b39dff; --s-bal-bg:#271f45;
+  --s-bal:#b39dff; --s-bal-bg:#271f45; --s-bic:#b5d94a; --s-bic-bg:#25300f;
   --shadow:0 1px 2px rgba(0,0,0,.35); color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14.5px;line-height:1.45}
@@ -340,6 +341,7 @@ td.r,th.r{text-align:right}
 .sec-pend{--sec:var(--due);--sec-bg:var(--due-bg)}
 .sec-hoy{--sec:#7ea538;--sec-bg:var(--ok-bg)}
 .pend-btn{border-left:5px solid var(--due)!important}
+.pend-n{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:99px;background:var(--due);color:#fff;font-style:normal;font-size:12px;font-weight:700;vertical-align:2px}
 .pend-trip{margin-bottom:14px}
 .pend-list{display:flex;flex-direction:column}
 .pend-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--line);padding:11px 16px;cursor:pointer;color:var(--ink);font:inherit}
@@ -375,6 +377,30 @@ td.r,th.r{text-align:right}
 .hoy-bags{display:flex;flex-direction:column;gap:6px}
 .hoy-bags>div{display:flex;align-items:center;gap:10px}
 .hoy-bags>div>span:nth-child(2){flex:1;min-width:0}
+.sec-bicis{--sec:var(--s-bic);--sec-bg:var(--s-bic-bg)}
+.bici-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.bici-card{background:var(--surface);border:1px solid var(--line);border-left:7px solid var(--s-bic);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:10px}
+.bici-card.off{border-left-color:var(--line);opacity:.8}
+.bici-card.ent{background:linear-gradient(90deg,var(--half-bg),var(--surface) 60%)}
+.bici-card.dev{background:linear-gradient(90deg,var(--ok-bg),var(--surface) 60%);border-left-color:var(--ok)}
+.bici-top{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.bici-top b{display:block;line-height:1.2} .bici-top .hint{font-size:12.5px}
+.bici-meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted)}
+.bici-meta .due-txt{color:var(--due);font-weight:600}
+.bici-card .tgs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bici-res{display:flex;flex-wrap:wrap;gap:10px;padding:14px 16px}
+.bici-res div{display:flex;flex-direction:column;border:1px solid var(--line);border-top:4px solid var(--s-bic);border-radius:10px;padding:8px 14px;min-width:120px}
+.bici-res b{font-family:var(--f-mono);font-size:22px;color:var(--s-bic)} .bici-res small{color:var(--muted)}
+.insc-panel{border-left:6px solid var(--due)}
+.insc-item{display:flex;flex-wrap:wrap;gap:10px 16px;justify-content:space-between;align-items:flex-start;padding:12px 16px;border-top:1px solid var(--line)}
+.insc-item>div:first-child{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.insc-item .acts{display:flex;gap:8px;flex-wrap:wrap}
+.slug-in{display:flex;align-items:center;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--surface)}
+.slug-in span{padding:8px 0 8px 10px;color:var(--muted);white-space:nowrap;font-size:13px}
+.f .slug-in input{border:0;border-radius:0;padding-left:2px}
+.pub-live{background:var(--ok-bg);border-radius:10px;padding:10px 12px;gap:6px}
+.pub-live a{word-break:break-all;font-weight:600;color:var(--ok)}
+.pub-live .acts{display:flex;gap:8px;flex-wrap:wrap}
 .empty{max-width:560px;margin:40px auto;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;color:var(--muted)}
 .empty h2{color:var(--ink);font-size:28px;text-transform:uppercase}
 .overlay{position:fixed;inset:0;background:rgba(10,18,14,.5);display:grid;place-items:center;z-index:50;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
@@ -395,7 +421,7 @@ td.r,th.r{text-align:right}
 .modal footer .left{margin-right:auto}
 @media (max-width:520px){.modal form{grid-template-columns:1fr}}
 .pillset{display:flex;gap:6px;flex-wrap:wrap}
-.pillset label{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer;font-weight:600;font-size:13px;color:var(--ink)}
+.pillset label{position:relative;display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer;font-weight:600;font-size:13px;color:var(--ink)}
 .pillset input{position:absolute;opacity:0;pointer-events:none}
 .pillset label:has(input:checked){border-color:var(--sec);background:var(--sec-bg);color:var(--sec)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;font-size:13.5px;z-index:60;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
@@ -444,7 +470,7 @@ const TIPOS = {bici:"Cicloturismo", trek:"Trekking", otro:"Otro"};
 const CATS = {comida:"Comidas", repostaje:"Repostajes", hotel:"Hoteles", super:"Supermercado", peaje:"Peajes y parking", bicis:"Alquiler de bicis", vehiculo:"Furgonetas", guias:"Pago a guías", actividad:"Actividades", otros:"Otros"};
 const CAT_IVA = {comida:10, repostaje:21, hotel:10, super:10, peaje:21, bicis:21, vehiculo:21, guias:21, actividad:21, otros:21};
 const CAT_COL = {comida:"s-gas",repostaje:"s-hot",hotel:"s-bal",super:"s-com",peaje:"s-cli",bicis:"s-room",vehiculo:"half",guias:"paid",actividad:"s-eta",otros:"muted"};
-const TABS = [["hoy","Hoy"],["hoteles","Hoteles"],["etapas","Programa"],["gastos","Gastos"],["compra","Compra"],["clientes","Clientes"],["room","List Room"],["balance","Balance"]];
+const TABS = [["hoy","Hoy"],["hoteles","Hoteles"],["etapas","Programa"],["gastos","Gastos"],["compra","Compra"],["clientes","Clientes"],["room","List Room"],["bicis","Bicis"],["balance","Balance"]];
 const pad2 = n => String(n ?? "").padStart(2,"0");
 const r2 = n => Math.round((+n||0)*100)/100;
 const slug = s => String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_|_$/g,"");
@@ -547,7 +573,7 @@ function subscribeTrips(){
     renderAll();
   }, e => { setSync("off","Sin conexión"); console.warn(e); });
 }
-function closeTrip(){ S.unsubs.forEach(u=>u()); S.unsubs = []; S.vid = null; S.hoteles=[]; S.clientes=[]; S.clientesRaw=[]; S.fin={}; S.rooming={}; S.gastos=[]; S.etapas={}; S.compra={}; S.day={}; }
+function closeTrip(){ S.unsubs.forEach(u=>u()); S.unsubs = []; S.vid = null; S.hoteles=[]; S.clientes=[]; S.clientesRaw=[]; S.fin={}; S.rooming={}; S.gastos=[]; S.etapas={}; S.compra={}; S.bicis={}; S.insc=null; S.day={}; }
 function openTrip(id, silent){
   S.view = "trip";
   if (S.vid === id) { renderAll(); return; }
@@ -565,6 +591,7 @@ function openTrip(id, silent){
   sub("rooming", s => { const r={}; s.docs.forEach(d=>r[d.id]=d.data()); S.rooming = r; });
   sub("etapas", s => { const r={}; s.docs.forEach(d=>r[d.id]=d.data()); S.etapas = r; });
   sub("compra", s => { const r={}; s.docs.forEach(d=>r[d.id]=d.data()); S.compra = r; });
+  sub("bicis", s => { const r={}; s.docs.forEach(d=>r[d.id]=d.data()); S.bicis = r; });
   if (!silent) { renderAll(); window.scrollTo(0,0); }
 }
 function renderTabsOnly(){}
@@ -594,7 +621,7 @@ function renderSide(){
   const block = (t, arr) => arr.length ? `<div class="label">${t}</div><div class="trip-list">${arr.map(item).join("")}</div>` : "";
   const nPend = S.pend && !S.pend.loading ? S.pend.trips.reduce((a,t)=>a+t.items.filter(i=>i.sev==="alta").length,0) : 0;
   el.innerHTML = `
-    <button class="gen-btn pend-btn ${AO} ${S.view==="pend"?"sel":""}" data-act="pend"><div>Pendientes${nPend?` <span class="chip due">${nPend}</span>`:""}<span>Pagos, hoteles, documentos y consentimientos por resolver</span></div></button>
+    <button class="gen-btn pend-btn ${AO} ${S.view==="pend"?"sel":""}" data-act="pend"><div>Pendientes${nPend?` <em class="pend-n">${nPend}</em>`:""}<span>Pagos, hoteles, documentos y consentimientos por resolver</span></div></button>
     <button class="gen-btn ${AO} ${S.view==="general"?"sel":""}" data-act="general"><div>Balance general<span>Cobros, gastos y beneficio de todos los viajes</span></div></button>
     <div class="side-head"><h2 style="font-size:21px;text-transform:uppercase">Viajes</h2>
       <button class="btn pri sm ${AO}" data-act="newTrip" style="--sec:#b5c036;color:#0b0b0b">+ Nuevo viaje</button></div>
@@ -627,14 +654,14 @@ function paintMain(el){
     el.innerHTML = `<div class="empty"><h2>Elige un viaje</h2><p>Selecciona un viaje en el menú para ver sus hoteles, etapas, gastos, lista de la compra, clientes, List Room y balance.</p><button class="btn pri ${AO}" data-act="newTrip">+ Crear un viaje</button></div>`;
     return;
   }
-  if (!isAdmin() && S.tab === "balance") S.tab = "hoteles";
+  if ((!isAdmin() && S.tab === "balance") || (v.tipo === "trek" && S.tab === "bicis")) S.tab = "hoteles";
   el.className = "sec-" + S.tab;
   const pendH = S.hoteles.filter(h => !hotelPaid(h)).length;
   const sinFoto = S.gastos.filter(g => !g.foto).length;
   const badge = {
     hoteles: pendH?`<span class="chip due">${pendH}</span>`:"",
     gastos: S.gastos.length?`<span class="chip">${S.gastos.length}</span>`:"",
-    clientes: `<span class="chip">${S.clientes.filter(c => !c.guia).length}</span>`,
+    clientes: `<span class="chip">${S.clientes.filter(c => !c.guia).length}</span>${S.insc && S.insc.list.some(i=>i.estado==="nueva") ? `<span class="chip due" title="Inscripciones nuevas">+${S.insc.list.filter(i=>i.estado==="nueva").length}</span>` : ""}`,
   };
   const isEx = /ejemplo/i.test(v.nombre||"");
   const tc = {bici:"bici",trek:"trek"}[v.tipo]||"otro";
@@ -646,6 +673,7 @@ function paintMain(el){
     case "compra": body = viewCompra(v); break;
     case "clientes": body = viewClientes(v); break;
     case "room": body = viewRoom(v); break;
+    case "bicis": body = viewBicis(v); break;
     case "balance": body = viewBalance(v); break;
     default: body = viewHoteles(v);
   }
@@ -657,9 +685,9 @@ function paintMain(el){
       <div class="trip-meta"><span class="chip ${tc}">${esc(TIPOS[v.tipo]||"Viaje")}</span>${v.espana?'<span class="chip es">España · facturas con IVA</span>':'<span class="chip">Extranjero · tickets</span>'}
         <span>${esc(rangeTxt(v))}</span>${tripState(v)==="live"?'<span class="chip live">En curso</span>':""}
         ${v.notas?`<span>· ${esc(v.notas)}</span>`:""}</div></div>
-      <div class="actions">${v.paginaClientes?`<a class="btn pri" style="--sec:var(--s-eta)" href="${esc(v.paginaClientes)}" target="_blank" rel="noopener">Página de clientes ↗</a>`:`<button class="btn ${AO}" data-act="editTrip" title="Añade el enlace a la página de clientes">+ Página de clientes</button>`}<button class="btn ${AO}" data-act="editTrip">Editar viaje</button></div></div>
+      <div class="actions">${v.paginaClientes?`<a class="btn pri" style="--sec:var(--s-eta)" href="${esc(v.paginaClientes)}" target="_blank" rel="noopener">Página de clientes ↗</a>`:`<button class="btn ${AO}" data-act="editTrip" title="Añade el enlace a la página de clientes">+ Página de clientes</button>`}<button class="btn ${AO}" data-act="publico">${pubLive(v)?"Página online":"Publicar página"}</button><button class="btn ${AO}" data-act="editTrip">Editar viaje</button></div></div>
     ${isAdmin() && (v.guias||[]).length?`<div class="trip-meta" style="margin:-6px 0 12px"><span class="label">Guías con acceso</span>${(v.guias||[]).map(g=>`<span class="chip">${esc(teamName(g))}</span>`).join("")}</div>`:""}
-    <nav class="tabs" role="tablist">${TABS.filter(([k]) => isAdmin() || k !== "balance").map(([k,t]) => `<button class="tab sec-${k} ${S.tab===k?"on":""}" data-act="tab" data-t="${k}"><i class="dot"></i>${t}${badge[k]||""}</button>`).join("")}</nav>
+    <nav class="tabs" role="tablist">${TABS.filter(([k]) => (isAdmin() || k !== "balance") && (k !== "bicis" || v.tipo !== "trek")).map(([k,t]) => `<button class="tab sec-${k} ${S.tab===k?"on":""}" data-act="tab" data-t="${k}"><i class="dot"></i>${t}${badge[k]||""}</button>`).join("")}</nav>
     ${body}`;
   if (S.tab === "gastos") { const f = document.createElement("div"); f.id="fab-holder"; f.innerHTML = `<button class="fab" data-act="newGasto">+ Ticket</button>`; document.body.appendChild(f); }
 }
@@ -867,6 +895,7 @@ function viewClientes(v){
     <div class="tile" style="--tc:var(--s-room)"><span class="label">Etiquetas</span><span class="v">${groups.length}</span><small>${cl.reduce((a,c)=>a+(+c.maletas||0),0)} maletas en total</small></div>
     <div class="tile" style="--tc:${sinDoc?"var(--due)":"var(--ok)"}"><span class="label">Clientes sin documentación</span><span class="v">${sinDoc}</span></div>
   </div>
+  ${inscPanel(v)}
   ${cl.length && isAdmin()?consentPanel(v, cl):""}
   <div class="panel">
     ${cs.length?`<div class="tbl-wrap"><table><thead><tr><th>Nº etiqueta</th><th>Cliente</th><th style="text-align:center">Maletas</th><th class="${AO}">Pagos</th><th>Consentimiento</th><th>Documentación</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
@@ -1306,6 +1335,193 @@ async function roomingPdf(hotelId, withGuides, withDocs){
   await saveFile(`Rooming_${slug(h.nombre||"hotel")}_${h.fecha}.pdf`, new Blob([await pdf.save()]), skipped.length ? `Rooming list lista. Sin documentación legible de: ${skipped.join(", ")}` : "Rooming list descargada");
 }
 
+/* ===== BICIS DE ALQUILER ===== */
+const BICI_TIPOS = ["Carretera","E-bike carretera","Gravel","E-gravel","MTB","E-MTB","Trekking / híbrida"];
+const PEDALES = ["Planos","SPD (MTB)","SPD-SL (Shimano carretera)","Look Keo","Trae los suyos"];
+const biciOf = c => (S.bicis||{})[c.id] || {};
+const biciPath = cid => `viajes/${S.vid}/bicis/${cid}`;
+function viewBicis(v){
+  const cs = sortedClients();
+  const head = secTitle("Bicis de alquiler", "Bici, talla y medidas de cada persona para pedírselas al proveedor, y control de entrega y devolución. Lo que rellenan los clientes al inscribirse online aparece aquí.",
+    `<button class="btn" data-act="biciCsv">Descargar para el proveedor (CSV)</button>`);
+  if (!cs.length) return head + `<div class="empty"><p>Primero añade los clientes del viaje.</p></div>`;
+  const con = cs.filter(c => biciOf(c).alquila);
+  const ent = con.filter(c => biciOf(c).ent).length, dev = con.filter(c => biciOf(c).dev).length;
+  const resumen = {}; con.forEach(c => { const b = biciOf(c); const k = `${b.tipo||"Sin tipo"}|${b.talla||"Sin talla"}`; resumen[k] = (resumen[k]||0)+1; });
+  const faltan = con.filter(c => !biciOf(c).talla && !biciOf(c).altura);
+  const card = c => { const b = biciOf(c); const med = [b.altura?`${b.altura} cm altura`:"", b.entrepierna?`${b.entrepierna} cm entrepierna`:"", b.peso?`${b.peso} kg`:""].filter(Boolean).join(" · ");
+    return `<div class="bici-card ${b.alquila?"":"off"} ${b.alquila&&b.dev?"dev":b.alquila&&b.ent?"ent":""}">
+      <div class="bici-top"><span class="tagno">${c.guia?"G":esc(pad2(c.num))}</span><div><b>${esc(c.nombre)}</b>${c.guia?' <span class="chip trek">Guía</span>':""}
+        <span class="hint">${b.alquila ? esc([b.tipo, b.talla?`talla ${b.talla}`:"", b.modelo].filter(Boolean).join(" · ") || "Bici de alquiler sin detallar") : b.propia ? "Trae su bici" : "Sin bici de alquiler"}</span></div>
+        <button class="btn ghost sm" data-act="editBici" data-id="${esc(c.id)}">Editar</button></div>
+      ${b.alquila ? `<div class="bici-meta">${med?`<span>${esc(med)}</span>`:'<span class="due-txt">Faltan medidas</span>'}${b.pedales?`<span>Pedales: ${esc(b.pedales)}</span>`:""}${b.numero?`<span>Bici nº <b>${esc(b.numero)}</b></span>`:""}${b.proveedor?`<span>${esc(b.proveedor)}</span>`:""}</div>
+        ${b.notas?`<div class="hint">${esc(b.notas)}</div>`:""}
+        <div class="tgs"><button class="tg ${b.ent?"on":""}" data-act="biciTg" data-id="${esc(c.id)}" data-k="ent">${b.ent?"✓ ":""}Entregada</button><button class="tg ${b.dev?"on":""}" data-act="biciTg" data-id="${esc(c.id)}" data-k="dev">${b.dev?"✓ ":""}Devuelta</button></div>` : ""}
+    </div>`; };
+  return head + `<div class="tiles">
+      <div class="tile" style="--tc:var(--s-bic)"><span class="label">Con bici de alquiler</span><span class="v">${con.length} / ${cs.length}</span></div>
+      <div class="tile" style="--tc:${ent<con.length?"var(--due)":"var(--ok)"}"><span class="label">Entregadas</span><span class="v">${ent} / ${con.length}</span></div>
+      <div class="tile" style="--tc:${dev<con.length?"var(--half)":"var(--ok)"}"><span class="label">Devueltas</span><span class="v">${dev} / ${con.length}</span></div>
+      <div class="tile" style="--tc:${faltan.length?"var(--due)":"var(--ok)"}"><span class="label">Sin talla ni medidas</span><span class="v">${faltan.length}</span>${faltan.length?`<small>${esc(faltan.map(c=>c.nombre.split(" ")[0]).join(", "))}</small>`:""}</div>
+    </div>
+    ${Object.keys(resumen).length ? `<div class="panel" style="margin-bottom:14px"><div class="panel-head"><h3>Pedido al proveedor</h3></div><div class="bici-res">${Object.entries(resumen).sort().map(([k,n]) => { const [t,s] = k.split("|"); return `<div><b>${n}</b><span>${esc(t)}</span><small>${esc(s)}</small></div>`; }).join("")}</div></div>` : ""}
+    <div class="bici-grid">${cs.map(card).join("")}</div>`;
+}
+function biciForm(cid){
+  const c = S.clientes.find(x => x.id === cid); if (!c) return;
+  const b = biciOf(c); S.modal = {kind:"bici", id:cid};
+  const sel = (id, label, opts, val) => `<div class="f"><label for="${id}">${label}</label><select id="${id}" name="${id}"><option value="">—</option>${opts.map(o => `<option ${val===o?"selected":""}>${esc(o)}</option>`).join("")}${val && !opts.includes(val)?`<option selected>${esc(val)}</option>`:""}</select></div>`;
+  openModal(hdr(`Bici · ${esc(c.nombre)}`) + `<form id="frm">
+    <div class="f full"><label>Bici</label><div class="pillset">
+      <label><input type="radio" name="modo" value="alquila" ${b.alquila?"checked":""}><span>Alquila bici</span></label>
+      <label><input type="radio" name="modo" value="propia" ${!b.alquila&&b.propia?"checked":""}><span>Trae la suya</span></label>
+      <label><input type="radio" name="modo" value="" ${!b.alquila&&!b.propia?"checked":""}><span>Sin indicar</span></label></div></div>
+    ${sel("b-tipo","Tipo de bici",BICI_TIPOS,b.tipo)}${fld("b-talla","Talla",b.talla)}
+    ${fld("b-altura","Altura (cm)",b.altura,"number")}${fld("b-entrepierna","Entrepierna (cm)",b.entrepierna,"number")}
+    ${fld("b-peso","Peso (kg, para e-bikes)",b.peso,"number")}${sel("b-pedales","Pedales",PEDALES,b.pedales)}
+    ${fld("b-modelo","Modelo",b.modelo)}${fld("b-proveedor","Proveedor",b.proveedor)}
+    ${fld("b-numero","Nº de bici / cuadro",b.numero)}
+    <div class="f full"><label for="b-notas">Notas</label><input id="b-notas" name="b-notas" value="${esc(b.notas||"")}" placeholder="Sillín, portabultos, GPS, casco…"></div>
+    <footer><button type="button" class="btn" data-act="close">Cancelar</button><button class="btn pri" type="submit">Guardar</button></footer>
+  </form>`, "bicis");
+}
+function biciCsv(){
+  const v = trip(); const rows = [["Nº","Nombre","Alquila","Tipo","Talla","Altura cm","Entrepierna cm","Peso kg","Pedales","Modelo","Proveedor","Nº bici","Entregada","Devuelta","Notas"]];
+  sortedClients().forEach(c => { const b = biciOf(c); rows.push([c.guia?"Guía":pad2(c.num), c.nombre, b.alquila?"Sí":b.propia?"Propia":"No", b.tipo||"", b.talla||"", b.altura||"", b.entrepierna||"", b.peso||"", b.pedales||"", b.modelo||"", b.proveedor||"", b.numero||"", b.ent?"Sí":"", b.dev?"Sí":"", b.notas||""]); });
+  const txt = "﻿" + rows.map(r => r.map(x => { const s = String(x??""); return /[;"\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; }).join(";")).join("\r\n");
+  saveFile(`Bicis_${slug(v.nombre)}.csv`, txt, "Lista de bicis descargada");
+}
+
+/* ===== PÁGINA DE CLIENTES PUBLICADA ===== */
+const slugify = s => String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60);
+const pubOf = v => v.publico || {};
+const pubLive = v => !!(pubOf(v).publicado && pubOf(v).slug && window.TBX_PUB);
+function publicoForm(){
+  const v = trip(); const p = pubOf(v);
+  if (!window.TBX_PUB) return toast("Publicar solo funciona en la versión del CRM de tu dominio.");
+  const sg = p.slug || slugify(`${v.nombre} ${(v.inicio||"").slice(0,4)}`.replace(/\b(\d{4})\s+\1\b/,"$1"));
+  S.modal = {kind:"publico"};
+  const ta = (id, label, val, ph) => `<div class="f full"><label for="${id}">${label}</label><textarea id="${id}" name="${id}" rows="3" placeholder="${esc(ph||"")}">${esc(val||"")}</textarea></div>`;
+  openModal(hdr("Página de clientes online") + `<form id="frm">
+    ${p.publicado?`<div class="f full pub-live"><span class="label">Publicada</span><a href="${esc(TBX_PUB.pageUrl(p.slug))}" target="_blank" rel="noopener">${esc(TBX_PUB.pageUrl(p.slug))}</a>
+      <div class="acts"><button type="button" class="btn sm" data-act="copy" data-v="${esc(TBX_PUB.pageUrl(p.slug))}">Copiar enlace</button>${p.inscripcion?`<button type="button" class="btn sm" data-act="copy" data-v="${esc(TBX_PUB.formUrl(p.slug))}">Copiar enlace de inscripción</button>`:""}</div></div>`:""}
+    <p class="hint" style="grid-column:1/-1;margin:0">Se publica el programa día a día (con perfiles y tracks para descargar), los hoteles de clientes y lo que escribas aquí. <b>No se publica</b> ningún pago, pasaporte ni dato de otros clientes.</p>
+    <div class="f full"><label for="p-slug">Dirección de la página</label><div class="slug-in"><span>travelbikex.es/viaje/?</span><input id="p-slug" name="p-slug" value="${esc(sg)}" required></div></div>
+    ${ta("p-intro","Presentación del viaje",p.intro,"Unas líneas para abrir la página")}
+    ${ta("p-encuentro","Punto y hora de encuentro",p.encuentro,"Aeropuerto de Venecia, 11 de julio a las 14:00 h…")}
+    ${ta("p-incluye","Qué incluye",p.incluye,"Una línea por cada cosa")}
+    ${ta("p-noincluye","Qué no incluye",p.noincluye,"Una línea por cada cosa")}
+    ${ta("p-llevar","Qué llevar",p.llevar,"Casco, ropa de abrigo para los puertos…")}
+    ${ta("p-practica","Información práctica",p.practica,"Seguro, clima, moneda, teléfonos…")}
+    ${fld("p-contacto","Contacto durante el viaje",p.contacto,"text","full")}
+    <div class="f full chk"><input type="checkbox" id="p-insc" name="p-insc" ${p.inscripcion?"checked":""}><label for="p-insc">Inscripción online abierta: los clientes rellenan sus datos, suben su DNI o pasaporte, sus medidas para la bici y firman el consentimiento en pantalla</label></div>
+    ${v.consentDoc?"":'<p class="hint" style="grid-column:1/-1;margin:0;color:var(--due)">Aún no has subido el documento de consentimiento (pestaña Clientes): la inscripción se firmará sin poder leerlo.</p>'}
+    <footer>${p.publicado?'<button type="button" class="btn danger left" data-act="unpublish">Despublicar</button>':""}<button type="button" class="btn" data-act="close">Cancelar</button><button class="btn pri" type="submit">${p.publicado?"Guardar y actualizar":"Publicar"}</button></footer>
+  </form>`, "etapas");
+}
+async function trackBlob(d){
+  const res = await fetch("/_blob/" + d.id); if (!res.ok) throw new Error("track no encontrado");
+  const txt = await res.text(); if (!txt.trim()) throw new Error("track vacío");
+  if (d.enc !== "b64" && /^\s*</.test(txt)) return new Blob([txt]);
+  const bin = atob(txt.trim()); const u8 = new Uint8Array(bin.length); for (let i=0;i<bin.length;i++) u8[i] = bin.charCodeAt(i);
+  return new Blob([u8]);
+}
+async function publicar(cfg){
+  const v = trip(); const P = window.TBX_PUB; const sg = cfg.slug;
+  const own = await P.owner(sg); if (own && own !== v.id) throw {msg:"Esa dirección ya la usa otro viaje. Cambia la dirección."};
+  const old = pubOf(v).slug;
+  await P.clear(sg);
+  const ds = dias(v); const out = [];
+  for (const f of ds){
+    const e = S.etapas[f] || {}; const tracks = [];
+    for (const [i, d] of (e.tracks||[]).entries()){
+      try { const name = (d.nombre||`track${i+1}.gpx`).replace(/[^\w.\-]+/g,"_"); const path = `${sg}/tracks/${f}_${i+1}_${name}`;
+        tracks.push({nombre:d.nombre||name, url: await P.upload(path, await trackBlob(d), /\.gpx$/i.test(name)?"application/gpx+xml":"application/octet-stream")}); } catch(err){ console.warn(err); }
+    }
+    out.push({fecha:f, n:ds.indexOf(f)+1, tipo:tipoDia(e), tag: dayHas(e) ? dayTag(ds,f) : TIPO_DIA[tipoDia(e)].lbl, titulo:cleanTitle(e.titulo)||"", salida:e.salida||"", llegada:e.llegada||"", km:e.km||"", desnivel:e.desnivel||"", hora:e.hora||"",
+      descripcion:e.descripcion||"", paradas:e.paradas||"", puntoEncuentro:e.puntoEncuentro||"", duracion:e.duracion||"", propuestas:e.propuestas||"", tracks});
+  }
+  let consent = null;
+  if (v.consentDoc){ try { const res = await fetch("/_blob/" + v.consentDoc.id); if (!res.ok) throw new Error("sin consentimiento"); const blob = await res.blob(); consent = await P.upload(`${sg}/consentimiento.pdf`, blob, "application/pdf"); } catch(err){ console.warn(err); } }
+  const hoteles = S.hoteles.filter(h => h.grupo==="clientes" && h.fecha).sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(h => ({fecha:h.fecha, noches:nNoches(h), nombre:h.nombre||"", ciudad:h.ciudad||"", direccion:h.direccion||""}));
+  const data = {nombre:v.nombre, tipo:v.tipo||"", inicio:v.inicio||"", fin:v.fin||"", rango:rangeTxt(v), intro:cfg.intro, encuentro:cfg.encuentro, incluye:cfg.incluye, noincluye:cfg.noincluye, llevar:cfg.llevar, practica:cfg.practica, contacto:cfg.contacto,
+    dias:out, hoteles, consentimiento:consent, bicis: v.tipo !== "trek", publicado:new Date().toISOString()};
+  await P.publish({slug:sg, viaje:v.id, data, inscripcion:!!cfg.inscripcion});
+  if (old && old !== sg){ try { await P.unpublish(old); await P.clear(old); } catch(err){ console.warn(err); } }
+  await S.db.doc("viajes/"+v.id).update({publico:{...cfg, publicado:true, at:todayIso}, paginaClientes:P.pageUrl(sg)});
+}
+
+/* ===== INSCRIPCIONES ONLINE ===== */
+async function loadInsc(force){
+  const v = trip(); const sg = pubOf(v).slug; if (!sg || !window.TBX_PUB || !isAdmin()) return;
+  if (S.insc && S.insc.slug === sg && !force) return;
+  S.insc = {slug:sg, loading:true, list:(S.insc&&S.insc.slug===sg)?S.insc.list:[]};
+  try { S.insc.list = await TBX_PUB.inscripciones(sg); } catch(e){ console.warn(e); S.insc.err = true; }
+  S.insc.loading = false; if (S.tab==="clientes") renderMain();
+}
+function inscPanel(v){
+  if (!isAdmin() || !pubOf(v).slug || !window.TBX_PUB) return "";
+  if (!S.insc || S.insc.slug !== pubOf(v).slug) { setTimeout(() => loadInsc(), 0); return ""; }
+  const nuevas = S.insc.list.filter(i => i.estado === "nueva");
+  if (!nuevas.length && !pubOf(v).inscripcion) return "";
+  return `<div class="panel insc-panel" style="margin:0 0 18px">
+    <div class="panel-head"><div><h3>Inscripciones online</h3><span class="hint">${pubOf(v).inscripcion?`Abiertas · <a href="${esc(TBX_PUB.formUrl(pubOf(v).slug))}" target="_blank" rel="noopener">formulario</a>`:"Cerradas"} · ${S.insc.list.filter(i=>i.estado==="añadida").length} ya añadidas</span></div>
+      <div class="acts"><button class="btn sm" data-act="inscReload">${S.insc.loading?"Cargando…":"Actualizar"}</button>${pubOf(v).inscripcion?`<button class="btn sm" data-act="copy" data-v="${esc(TBX_PUB.formUrl(pubOf(v).slug))}">Copiar enlace</button>`:""}</div></div>
+    ${nuevas.length ? nuevas.map(i => { const d = i.data||{}; const b = d.bici||{}; return `<div class="insc-item">
+      <div><b>${esc(d.nombre||"Sin nombre")}</b> <span class="chip due">Nueva</span><div class="hint">${esc([d.email, d.telefono, d.documento].filter(Boolean).join(" · "))}</div>
+        <div class="hint">${esc([d.tipoHab?`Hab. ${d.tipoHab}`:"", d.compartida?`con ${d.compartida}`:"", b.alquila?`Bici ${[b.tipo,b.altura?b.altura+" cm":""].filter(Boolean).join(" ")}`:"", d.alergias?`Alergias: ${d.alergias}`:""].filter(Boolean).join(" · "))}</div>
+        <div class="docs">${(d.archivos||[]).map(a => `<button class="btn ghost sm" data-act="inscFile" data-p="${esc(a.path)}">${esc(a.nombre)}</button>`).join("")}${d.firma?'<span class="chip okc">Consentimiento firmado en pantalla</span>':'<span class="chip due">Sin firma</span>'}</div>
+        <div class="hint">Recibida el ${esc(new Date(i.created_at).toLocaleString("es-ES",{dateStyle:"medium",timeStyle:"short"}))}</div></div>
+      <div class="acts"><button class="btn pri sm" data-act="inscAdd" data-id="${esc(i.id)}">Añadir como cliente</button><button class="btn sm danger ${S.armed==="insc"+i.id?"armed":""}" data-act="inscDel" data-id="${esc(i.id)}">${S.armed==="insc"+i.id?"¿Descartar?":"Descartar"}</button></div>
+    </div>`; }).join("") : '<p class="hint" style="padding:12px 16px;margin:0">No hay inscripciones nuevas.</p>'}
+  </div>`;
+}
+async function firmaPdf(v, d){
+  const {PDFDocument, rgb, StandardFonts} = PDFLib;
+  let pdf;
+  if (v.consentDoc){ try { pdf = await PDFDocument.load(await (await fetch("/_blob/" + v.consentDoc.id)).arrayBuffer(), {ignoreEncryption:true}); } catch(e){ console.warn(e); } }
+  if (!pdf) pdf = await PDFDocument.create();
+  const fR = await pdf.embedFont(StandardFonts.Helvetica), fB = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const clean = t => String(t ?? "").replace(/[^\x20-\x7E -ÿ€–—‘’“”•…]/g, "");
+  const pg = pdf.addPage([595.28, 841.89]); let y = 780;
+  const line = (t, size=11, font=fR) => { pg.drawText(clean(t), {x:50, y, size, font, color:rgb(.1,.1,.1), maxWidth:495, lineHeight:size*1.35}); y -= size*1.35*Math.max(1, Math.ceil(fR.widthOfTextAtSize(clean(t), size)/495)) + 4; };
+  line("TRAVEL BIKEX · Firma del consentimiento", 16, fB); y -= 6;
+  line(`Viaje: ${v.nombre} (${rangeTxt(v)})`);
+  line(`Nombre: ${d.nombre||""}`); if (d.documento) line(`DNI / pasaporte: ${d.documento}`);
+  if (d.email) line(`Email: ${d.email}`); if (d.telefono) line(`Teléfono: ${d.telefono}`);
+  y -= 8;
+  (d.aceptaciones||[]).forEach(t => line(`[X] ${t}`, 10));
+  y -= 8; line(`Firmado electrónicamente el ${d.firmadoEn ? new Date(d.firmadoEn).toLocaleString("es-ES") : ""} desde el formulario de inscripción online.`, 10);
+  if (d.firma && /^data:image\/png;base64,/.test(d.firma)){
+    const img = await pdf.embedPng(d.firma); const w = Math.min(300, img.width), h = img.height * w / img.width;
+    y -= h + 10; pg.drawRectangle({x:48, y:y-4, width:w+4, height:h+8, borderColor:rgb(.6,.6,.6), borderWidth:.6}); pg.drawImage(img, {x:50, y, width:w, height:h});
+    y -= 16; pg.drawText("Firma", {x:50, y, size:9, font:fR, color:rgb(.4,.4,.4)});
+  }
+  return new Blob([await pdf.save()], {type:"application/pdf"});
+}
+async function inscAdd(id){
+  const v = trip(); const i = (S.insc.list||[]).find(x => x.id === id); if (!i) return;
+  const d = i.data || {};
+  toast("Añadiendo cliente…");
+  try {
+    const docs = [];
+    for (const a of (d.archivos||[])){ try { const blob = await TBX_PUB.file(a.path); const r = await S.assets.upload(blob, {type: blob.type || a.tipo}); docs.push({id:r.id, nombre:a.nombre, tipo:r.contentType, size:r.sizeBytes}); } catch(e){ console.warn(e); } }
+    let consent = {};
+    if (d.firma){ try { const blob = await firmaPdf(v, d); const r = await S.assets.upload(blob, {type:"application/pdf"});
+      consent = {estado:"firmado", firmado:(d.firmadoEn||new Date().toISOString()).slice(0,10), online:true, doc:{id:r.id, nombre:`Consentimiento_${slug(d.nombre)}.pdf`, tipo:"application/pdf", size:r.sizeBytes}}; } catch(e){ console.warn(e); } }
+    const comp = d.compartida && S.clientes.find(c => c.nombre.toLowerCase().includes(String(d.compartida).toLowerCase().trim()) && String(d.compartida).trim().length > 2);
+    const num = comp ? comp.num : S.clientes.reduce((m,x)=>Math.max(m,+x.num||0),0)+1;
+    const notas = [d.alergias?`Alergias / dieta: ${d.alergias}`:"", d.emergencia?`Emergencia: ${d.emergencia}`:"", d.nacimiento?`Nacimiento: ${d.nacimiento}`:"", d.documento?`Doc.: ${d.documento}`:"", d.compartida && !comp?`Comparte habitación con: ${d.compartida}`:"", d.comentarios||""].filter(Boolean).join(" · ");
+    const data = {num, nombre:d.nombre||"Sin nombre", maletas:1, telefono:d.telefono||"", email:d.email||"", notas, guia:false, tipoHab:d.tipoHab||"", docs, consent, inscripcion:i.id};
+    const ref = await S.db.collection(`viajes/${S.vid}/clientes`).add(data);
+    const b = d.bici||{};
+    if (b.alquila || b.propia) await S.db.doc(biciPath(ref.id)).set({alquila:!!b.alquila, propia:!!b.propia, tipo:b.tipo||"", talla:b.talla||"", altura:b.altura||"", entrepierna:b.entrepierna||"", peso:b.peso||"", pedales:b.pedales||"", notas:b.notas||""});
+    await TBX_PUB.setEstado(i.id, "añadida");
+    i.estado = "añadida"; renderMain();
+    toast(`${data.nombre} añadido con la etiqueta ${pad2(num)}${comp?` (comparte con ${comp.nombre.split(" ")[0]})`:""}`);
+  } catch(e){ writeErr(e); }
+}
+
 /* ---------- modals ---------- */
 function openModal(html, sec){ const m = $("#modal"); m.className = "overlay " + (sec?"sec-"+sec:""); m.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`; m.hidden = false;
   if (!isAdmin() && S.modal && ["trip","hotel","client","etapa"].includes(S.modal.kind)) {
@@ -1520,6 +1736,19 @@ async function submitForm(form){
       if (m.id) await col.doc(m.id).update(data); else cid = (await col.add({...data, docs:[]})).id;
       await mutateDoc(finPath(cid), cur => ({...cur, precio:+fd.precio||0}));
       toast("Cliente guardado");
+    } else if (m.kind === "bici"){
+      const n = k => val(k).trim();
+      const data = {alquila: fd.modo==="alquila", propia: fd.modo==="propia", tipo:n("b-tipo"), talla:n("b-talla"), altura:n("b-altura"), entrepierna:n("b-entrepierna"), peso:n("b-peso"), pedales:n("b-pedales"), modelo:n("b-modelo"), proveedor:n("b-proveedor"), numero:n("b-numero"), notas:n("b-notas")};
+      await mutateDoc(biciPath(m.id), cur => ({...cur, ...data}));
+      toast("Bici guardada");
+    } else if (m.kind === "publico"){
+      const sg = slugify(val("p-slug"));
+      if (!/^[a-z0-9][a-z0-9-]{2,59}$/.test(sg)) return toast("La dirección debe tener al menos 3 letras o números.");
+      const cfg = {slug:sg, intro:val("p-intro").trim(), encuentro:val("p-encuentro").trim(), incluye:val("p-incluye").trim(), noincluye:val("p-noincluye").trim(), llevar:val("p-llevar").trim(), practica:val("p-practica").trim(), contacto:val("p-contacto").trim(), inscripcion:$("#p-insc").checked};
+      const btn = form.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = "Publicando…";
+      try { await publicar(cfg); toast("Página publicada"); S.insc = null; setTimeout(publicoForm, 200); }
+      catch(e){ console.warn(e); toast(e && e.msg ? e.msg : "No se pudo publicar. Revisa que hayas ejecutado el SQL 03 en Supabase."); btn.disabled = false; btn.textContent = "Publicar"; }
+      return;
     } else if (m.kind === "rooming"){
       const btn = form.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = "Preparando…";
       try { await roomingPdf(val("rl-hotel"), $("#rl-guias").checked, $("#rl-docs").checked); } finally { btn.disabled = false; btn.textContent = "Descargar PDF"; }
@@ -1573,13 +1802,14 @@ async function doDelete(kind){
     if (kind==="trip"){
       const files = [...S.clientes.flatMap(c=>c.docs||[]), ...Object.values(S.etapas).flatMap(e=>e.files||[]), ...S.gastos.map(g=>g.foto).filter(Boolean)];
       for (const d of files) { try { if (S.assets) await S.assets.delete(d.id); } catch(e){} }
-      const sub = [["hoteles",S.hoteles.map(x=>x.id)],["clientes",S.clientes.map(x=>x.id)],["gastos",S.gastos.map(x=>x.id)],["rooming",Object.keys(S.rooming)],["etapas",Object.keys(S.etapas)],["compra",Object.keys(S.compra)],["finanzas",Object.keys(S.fin||{})]];
+      const sub = [["hoteles",S.hoteles.map(x=>x.id)],["clientes",S.clientes.map(x=>x.id)],["gastos",S.gastos.map(x=>x.id)],["rooming",Object.keys(S.rooming)],["etapas",Object.keys(S.etapas)],["compra",Object.keys(S.compra)],["finanzas",Object.keys(S.fin||{})],["bicis",Object.keys(S.bicis||{})]];
+      const vt = trip(); if (vt && pubOf(vt).slug && window.TBX_PUB) { try { await TBX_PUB.unpublish(pubOf(vt).slug); await TBX_PUB.clear(pubOf(vt).slug); } catch(e){} }
       for (const [c, ids] of sub) for (const x of ids) await S.db.doc(`${base}/${c}/${x}`).delete();
       await S.db.doc(base).delete();
       closeTrip(); try{localStorage.removeItem("tbx_vid");}catch(e){} S.general=null; renderAll(); toast("Viaje borrado");
     } else if (kind==="hotel"){ await S.db.doc(`${base}/hoteles/${id}`).delete(); toast("Hotel borrado"); }
     else if (kind==="client"){ const c=S.clientes.find(x=>x.id===id); for (const d of (c&&c.docs)||[]) { try{ if(S.assets) await S.assets.delete(d.id);}catch(e){} }
-      await S.db.doc(`${base}/clientes/${id}`).delete(); await S.db.doc(`${base}/finanzas/${id}`).delete().catch(()=>{}); toast("Cliente borrado"); }
+      await S.db.doc(`${base}/clientes/${id}`).delete(); await S.db.doc(`${base}/finanzas/${id}`).delete().catch(()=>{}); await S.db.doc(`${base}/bicis/${id}`).delete().catch(()=>{}); toast("Cliente borrado"); }
     else if (kind==="gasto"){ const g=S.gastos.find(x=>x.id===id); if (g&&g.foto&&S.assets) S.assets.delete(g.foto.id).catch(()=>{});
       await S.db.doc(`${base}/gastos/${id}`).delete(); toast("Gasto borrado"); }
   } catch(e){ writeErr(e); }
@@ -1676,7 +1906,7 @@ document.addEventListener("click", async ev => {
   if (!b) { if (ev.target.id==="modal") closeModal(); return; }
   const a = b.dataset.act;
   if (a!=="del" && a!=="delFile" && a!=="delPago" && a!=="teamDel" && S.armed && !String(S.armed).startsWith("doc")) S.armed = null;
-  const ADMIN_ACTS = ["pend","reloadPend","newTrip","editTrip","general","reloadGen","genYear","newHotel","newClient","editEtapa","upload","delFile","cFirm","cUndo","cMarkSent","pagos","delPago","team","teamDel"];
+  const ADMIN_ACTS = ["publico","unpublish","inscReload","inscFile","inscAdd","inscDel","pend","reloadPend","newTrip","editTrip","general","reloadGen","genYear","newHotel","newClient","editEtapa","upload","delFile","cFirm","cUndo","cMarkSent","pagos","delPago","team","teamDel"];
   if (!isAdmin() && (ADMIN_ACTS.includes(a) || (a==="del" && b.dataset.kind!=="gasto"))) { toast("Esto solo lo puede hacer el administrador."); return; }
   switch(a){
     case "team": await loadTeam(); teamForm(); break;
@@ -1693,6 +1923,19 @@ document.addEventListener("click", async ev => {
     case "gotoDay": S.day.eta = b.dataset.f; S.tab = "etapas"; renderMain(); window.scrollTo(0,0); break;
     case "gotoShop": S.day.com = b.dataset.f; S.tab = "compra"; renderMain(); window.scrollTo(0,0); break;
     case "rooming": roomingForm(); break;
+    case "editBici": biciForm(b.dataset.id); break;
+    case "biciTg": { const c = S.clientes.find(x => x.id===b.dataset.id); if (!c) break; const k = b.dataset.k, on = !biciOf(c)[k];
+      mutateDoc(biciPath(c.id), cur => ({...cur, [k]:on})).catch(writeErr); break; }
+    case "biciCsv": biciCsv(); break;
+    case "publico": publicoForm(); break;
+    case "unpublish": { if (S.armed !== "unpub"){ S.armed = "unpub"; b.classList.add("armed"); b.textContent = "Pulsa otra vez para despublicar"; break; } S.armed = null;
+      const v = trip(), sg = pubOf(v).slug;
+      try { await TBX_PUB.unpublish(sg); await TBX_PUB.clear(sg).catch(()=>{}); await S.db.doc("viajes/"+v.id).update({publico:{...pubOf(v), publicado:false, inscripcion:false}, paginaClientes:""}); closeModal(); toast("Página despublicada"); } catch(e){ writeErr(e); } break; }
+    case "inscReload": loadInsc(true); break;
+    case "inscFile": { const w = window.open("", "_blank"); TBX_PUB.fileUrl(b.dataset.p).then(u => { if (w) w.location = u; else location.href = u; }, () => { if (w) w.close(); toast("No se pudo abrir el archivo."); }); break; }
+    case "inscAdd": b.disabled = true; await inscAdd(b.dataset.id); break;
+    case "inscDel": { const k = "insc"+b.dataset.id; if (S.armed !== k){ S.armed = k; renderMain(); break; } S.armed = null;
+      const i = S.insc.list.find(x => x.id===b.dataset.id); try { await TBX_PUB.setEstado(i.id, "descartada"); TBX_PUB.removeFiles(((i.data||{}).archivos||[]).map(a=>a.path)).catch(()=>{}); i.estado = "descartada"; renderMain(); toast("Inscripción descartada"); } catch(e){ writeErr(e); } break; }
     case "genYear": S.genYear = b.dataset.y || null; renderMain(); break;
     case "back": closeTrip(); S.view="trip"; try{localStorage.removeItem("tbx_vid");}catch(e){} renderAll(); break;
     case "tab": S.tab = b.dataset.t; try{localStorage.setItem("tbx_tab",S.tab);}catch(e){} renderMain(); break;

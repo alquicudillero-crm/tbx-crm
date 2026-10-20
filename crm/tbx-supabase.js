@@ -345,6 +345,36 @@
     async remove(email) { const { error } = await sb.from("tbx_team").delete().eq("email", String(email).toLowerCase()); if (error) throw error; }
   };
 
+  /* ---------- página pública e inscripciones online (administrador) ---------- */
+  const PUB = "tbx-public", INSC = "tbx-inscripciones";
+  window.TBX_PUB = {
+    url(path) { return `${CFG.supabaseUrl.replace(/\/$/, "")}/storage/v1/object/public/${PUB}/${String(path).split("/").map(encodeURIComponent).join("/")}`; },
+    pageUrl(slug) { return new URL(`../viaje/?${slug}`, location.href).href; },
+    formUrl(slug) { return new URL(`../inscripcion/?${slug}`, location.href).href; },
+    async upload(path, blob, type) {
+      const { error } = await sb.storage.from(PUB).upload(path, blob, { contentType: type || blob.type || "application/octet-stream", upsert: true });
+      if (error) throw error; return this.url(path);
+    },
+    async clear(slug) {
+      const all = []; for (const sub of ["", "tracks"]) {
+        const { data } = await sb.storage.from(PUB).list(sub ? `${slug}/${sub}` : slug, { limit: 1000 });
+        (data || []).filter(f => f.id || f.metadata).forEach(f => all.push(`${slug}/${sub ? sub + "/" : ""}${f.name}`));
+      }
+      if (all.length) await sb.storage.from(PUB).remove(all);
+    },
+    async publish(row) { const { error } = await sb.from("tbx_publico").upsert({ ...row, updated_at: new Date().toISOString() }); if (error) throw error; },
+    async unpublish(slug) { const { error } = await sb.from("tbx_publico").delete().eq("slug", slug); if (error) throw error; },
+    async owner(slug) { const { data } = await sb.from("tbx_publico").select("viaje").eq("slug", slug).maybeSingle(); return data ? data.viaje : null; },
+    async inscripciones(slug) {
+      const { data, error } = await sb.from("tbx_inscripciones").select("id,slug,data,estado,created_at").eq("slug", slug).order("created_at", { ascending: false });
+      if (error) throw error; return data || [];
+    },
+    async setEstado(id, estado) { const { error } = await sb.from("tbx_inscripciones").update({ estado }).eq("id", id); if (error) throw error; },
+    async file(path) { const { data, error } = await sb.storage.from(INSC).download(path); if (error) throw error; return data; },
+    async fileUrl(path) { const { data, error } = await sb.storage.from(INSC).createSignedUrl(path, 3600); if (error) throw error; return data.signedUrl; },
+    async removeFiles(paths) { if (paths.length) await sb.storage.from(INSC).remove(paths); }
+  };
+
   /* ---------- the window.claude shim the CRM expects ---------- */
   window.claude = {
     use: async name => {
