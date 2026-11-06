@@ -1141,6 +1141,9 @@ function pagosOf(c){
   if (!ps.length && +c.cobrado) ps.push({id:"legacy", fecha:"", importe:+c.cobrado, metodo:"", nota:"Pagado antes de usar el registro de pagos"});
   return ps.sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)));
 }
+// Todo el dinero va por banco: solo transferencia o tarjeta
+const METODOS_BANCO = {cliente:["Transferencia","Tarjeta"], hotel:["Transferencia","Tarjeta","Tarjeta virtual (plataforma)"], gasto:["Tarjeta de la empresa","Transferencia","Domiciliación bancaria"]};
+const selMetodo = (id, tipo, val, extra="") => `<select id="${id}" name="${id}" ${extra}><option value="">—</option>${METODOS_BANCO[tipo].map(m => `<option ${val===m?"selected":""}>${m}</option>`).join("")}${val && !METODOS_BANCO[tipo].includes(val) && !/efectivo|\bB\b/i.test(val) ? `<option selected>${esc(val)}</option>` : ""}</select>`;
 const extrasOf = c => c.extras || [];
 const extrasVenta = c => r2(extrasOf(c).reduce((a,x) => a + (+x.importe||0), 0));
 const extrasCoste = c => r2(extrasOf(c).reduce((a,x) => a + (+x.coste||0), 0));
@@ -1983,6 +1986,36 @@ function extrasForm(cid){
     <footer><button type="button" class="btn" data-act="close">Cerrar</button><button class="btn pri" type="submit">Añadir extra</button></footer>
   </form>`, "balance");
 }
+/* ===== LIMPIEZA ÚNICA: todo el dinero va por banco (sin efectivo ni pagos «en B») ===== */
+async function limpiarEfectivo(){
+  if (!isAdmin()) return;
+  if (!S.loadedTrips) { setTimeout(limpiarEfectivo, 2000); return; }
+  try {
+    const cfgRef = S.db.doc("contacfg/ajustes"); const cs = await cfgRef.get(); const cfg = cs.exists ? cs.data() : {};
+    if (cfg.limpiezaPagosBanco) return;
+    const malo = t => /efectivo|\ben b\b|\(b\)|\bnegro\b/i.test(String(t||""));
+    const limpiaNota = t => String(t||"").replace(/\s*(pagado\s+)?(en\s+efectivo|en\s+B\b|\(B\))/gi, "").replace(/\s{2,}/g," ").trim();
+    let n = 0;
+    for (const v of S.viajes) {
+      const base = `viajes/${v.id}`;
+      for (const col of ["finanzas","clientes"]) for (const d of (await S.db.collection(`${base}/${col}`).get()).docs) {
+        const x = d.data(); const pm = (x.pagos||[]).some(p => malo(p.metodo) || malo(p.nota));
+        if (!pm && !malo(x.notaPago) && !malo(x.notaAdmin)) continue;
+        const upd = {};
+        if (pm) upd.pagos = x.pagos.map(p => (malo(p.metodo) || malo(p.nota)) ? {...p, metodo: malo(p.metodo) ? "" : p.metodo, nota: (limpiaNota(p.nota) === "Resto" ? "Resto del pago" : limpiaNota(p.nota)) || "Resto del pago"} : p);
+        if (malo(x.notaPago)) upd.notaPago = limpiaNota(x.notaPago);
+        if (malo(x.notaAdmin)) upd.notaAdmin = limpiaNota(x.notaAdmin);
+        await S.db.doc(`${base}/${col}/${d.id}`).update(upd); n++;
+      }
+      for (const col of ["hoteles","gastos"]) for (const d of (await S.db.collection(`${base}/${col}`).get()).docs) {
+        const x = d.data(); if (!malo(x.metodo)) continue;
+        await S.db.doc(`${base}/${col}/${d.id}`).update({metodo:""}); n++;
+      }
+    }
+    await cfgRef.set({...cfg, limpiezaPagosBanco:new Date().toISOString()});
+    if (n) toast(`Quitadas ${n} referencias a pagos en efectivo: todo queda como pago por banco`);
+  } catch(e){ console.warn(e); }
+}
 /* ===== AVISO DE VERSIÓN NUEVA DEL CRM ===== */
 function vigilarVersion(){
   const firma = t => t.length + ":" + (t.match(/function /g)||[]).length;
@@ -2205,12 +2238,11 @@ function hotelForm(h){
     ${fld("email","Email del hotel",h.email,"email","full")}
     <div class="f full"><label for="habitaciones">Habitaciones reservadas</label><textarea id="habitaciones" name="habitaciones" placeholder="Ej. 6 dobles, 2 individuales">${esc(h.habitaciones||"")}</textarea></div>
     <div class="f"><label for="plataforma">Plataforma de pago</label><input id="plataforma" name="plataforma" list="dl-plat" value="${esc(h.plataforma||"")}"></div>
-    <div class="f"><label for="metodo">Método de pago</label><input id="metodo" name="metodo" list="dl-met" value="${esc(h.metodo||"")}"></div>
+    <div class="f"><label for="metodo">Método de pago</label>${selMetodo("metodo","hotel",h.metodo||"")}</div>
     ${fld("total","Importe total (€)",h.total,"number")}${fld("pagado","Pagado hasta ahora (€)",h.pagado,"number")}
     <div class="calc" id="calc"></div>
     <div class="f full"><label for="notas">Otros datos relevantes</label><textarea id="notas" name="notas" placeholder="Ej. Check-in desde las 15:00, parking para la furgoneta, cena incluida…">${esc(h.notas||"")}</textarea></div>
     <datalist id="dl-plat"><option>Booking</option><option>Expedia</option><option>Directo con el hotel</option><option>Hotelbeds</option><option>Airbnb</option></datalist>
-    <datalist id="dl-met"><option>Tarjeta</option><option>Transferencia</option><option>Pago en el hotel</option><option>Tarjeta virtual</option><option>Efectivo</option></datalist>
     <footer>${h.id?delBtn("hotel","Borrar"):""}<button type="button" class="btn" data-act="allPaid">Marcar todo pagado</button>
       <button type="button" class="btn" data-act="close">Cancelar</button><button class="btn pri" type="submit">Guardar</button></footer>
   </form>`, "hoteles");
@@ -2253,11 +2285,10 @@ function gastoForm(g){
     <div class="f" id="ivaWrap" ${civa?"":"hidden"}><label for="g-iva">Tipo de IVA</label><select id="g-iva" name="g-iva">${[21,10,4,0].map(p=>`<option value="${p}" ${+g.iva===p?"selected":""}>${p} %</option>`).join("")}</select></div>
     <div class="calc" id="calc"></div>
     ${fld("g-concepto","Establecimiento / concepto",g.concepto,"text","full")}
-    <div class="f"><label for="g-metodo">Método de pago</label><input id="g-metodo" list="dl-gmet" value="${esc(g.metodo||"")}"></div>
+    <div class="f"><label for="g-metodo">Método de pago</label>${selMetodo("g-metodo","gasto",g.metodo||"")}</div>
     ${fld("g-por","Pagado por",g.pagadoPor)}
     <div class="f full"><label for="g-notas">Notas</label><input id="g-notas" value="${esc(g.notas||"")}"></div>
     ${isAdmin()?`<div class="f full chk"><input type="checkbox" id="g-solo" ${g.soloAdmin?"checked":""}><label for="g-solo">Solo visible para el administrador (no lo verán los guías)</label></div>`:""}
-    <datalist id="dl-gmet"><option>Tarjeta empresa</option><option>Efectivo</option><option>Tarjeta del guía</option><option>Transferencia</option></datalist>
     <footer>${!isNew?delBtn("gasto","Borrar"):""}<button type="button" class="btn" data-act="close">Cancelar</button><button class="btn pri" type="submit" id="g-save">Guardar gasto</button></footer>
   </form>`, "gastos");
   updCalc();
@@ -2323,9 +2354,8 @@ function pagosForm(cid){
     <h3 style="grid-column:1/-1;font-size:17px;text-transform:uppercase;margin-top:6px">Nuevo pago</h3>
     ${fld("p-importe","Importe (€)",falta?r2(falta):"","number")}
     ${fld("p-fecha","Fecha del pago",todayIso,"date")}
-    <div class="f"><label for="p-metodo">Cómo ha pagado</label><input id="p-metodo" name="p-metodo" list="dl-pmet" placeholder="Transferencia, Bizum…"></div>
+    <div class="f"><label for="p-metodo">Cómo ha pagado</label>${selMetodo("p-metodo","cliente","Transferencia")}</div>
     ${fld("p-nota","Nota (opcional)","","text")}
-    <datalist id="dl-pmet"><option>Transferencia</option><option>Bizum</option><option>Tarjeta</option><option>Efectivo</option><option>TPV / pasarela web</option></datalist>
     <footer><button type="button" class="btn" data-act="close">Cerrar</button><button class="btn pri" type="submit">Añadir pago</button></footer>
   </form>`, "balance");
 }
@@ -2727,7 +2757,7 @@ renderAll();
   S.db = await window.claude.use("db");
   if (!S.db) { setSync("off","Sin conexión"); renderAll(); return; }
   setSync("","Cargando…"); renderAll();
-  subscribeTrips(); loadConsentGlobal(); vigilarVersion();
+  subscribeTrips(); loadConsentGlobal(); vigilarVersion(); setTimeout(limpiarEfectivo, 2500);
   loadTeam().then(() => renderAll());
   window.claude.use("assets").then(a => { S.assets = a; renderMain(); });
   window.claude.use("downloads").then(d => { S.downloads = d; });
